@@ -47,7 +47,8 @@ public class FileLog2ESDemo {
 		} catch (Exception e) {
 		}
 		FileLog2ESImportBuilder importBuilder = new FileLog2ESImportBuilder();
-		importBuilder.setBatchSize(500).setFetchSize(1000);
+		importBuilder.setBatchSize(500)//设置批量入库的记录数
+				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
 
@@ -57,7 +58,48 @@ public class FileLog2ESDemo {
 		config.addConfig("D:\\ecslog",//指定目录
 				"error-2021-03-27-1.log",//指定文件名称，可以是正则表达式
 				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]");//指定多行记录的开头识别标记，正则表达式
+
+		config.addConfig("D:\\ecslog",//指定目录
+				"es.log",//指定文件名称，可以是正则表达式
+				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]");//指定多行记录的开头识别标记，正则表达式
+
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
+		/**
+		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@common字段值添加到记录中，文件插件支持的元信息字段如下：
+		 * hostIp：主机ip
+		 * hostName：主机名称
+		 * filePath： 文件路径
+		 * timestamp：采集的时间戳
+		 * pointer：记录对应的截止文件指针,long类型
+		 * fileId：linux文件号，windows系统对应文件路径
+		 * 例如：
+		 * {
+		 *   "_index": "filelog",
+		 *   "_type": "_doc",
+		 *   "_id": "HKErgXgBivowv_nD0Jhn",
+		 *   "_version": 1,
+		 *   "_score": null,
+		 *   "_source": {
+		 *     "title": "解放",
+		 *     "subtitle": "小康",
+		 *     "ipinfo": "",
+		 *     "newcollecttime": "2021-03-30T03:27:04.546Z",
+		 *     "author": "张无忌",
+		 *     "@common": {
+		 *       "path": "D:\\ecslog\\error-2021-03-27-1.log",
+		 *       "hostname": "",
+		 *       "pointer": 3342583,
+		 *       "hostip": "",
+		 *       "timestamp": 1617074824542,
+		 *       "fileId": "D:/ecslog/error-2021-03-27-1.log"
+		 *     },
+		 *     "message": "[18:04:40:161] [INFO] - org.frameworkset.tran.schedule.ScheduleService.externalTimeSchedule(ScheduleService.java:192) - Execute schedule job Take 3 ms"
+		 *   }
+		 * }
+		 *
+		 * true 开启 false 关闭
+		 */
+		config.setEnableMeta(false);
 		importBuilder.setFileImportConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 		importBuilder.setTargetElasticsearch("default");
@@ -67,7 +109,7 @@ public class FileLog2ESDemo {
 		//importBuilder.setIndexType("idxtype");
 
 		//增量配置开始
-		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
 		importBuilder.setLastValueStorePath("filelog_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
@@ -116,6 +158,24 @@ public class FileLog2ESDemo {
 //				context.addFieldValue("author","duoduo");//将会覆盖全局设置的author变量
 				context.addFieldValue("title","解放");
 				context.addFieldValue("subtitle","小康");
+				/**
+				 * 文件插件支持的元信息字段如下：
+				 * hostIp：主机ip
+				 * hostName：主机名称
+				 * filePath： 文件路径
+				 * timestamp：采集的时间戳
+				 * pointer：记录对应的截止文件指针,long类型
+				 * fileId：linux文件号，windows系统对应文件路径
+				 */
+				String filePath = (String)context.getMetaValue("filePath");
+				//可以根据文件路径信息设置不同的索引
+				if(filePath.endsWith("error-2021-03-27-1.log")) {
+					context.setIndex("errorlog");
+				}
+				else if(filePath.endsWith("es.log")){
+					 context.setIndex("eslog");
+				}
+
 
 //				context.addIgnoreFieldMapping("title");
 				//上述三个属性已经放置到docInfo中，如果无需再放置到索引文档中，可以忽略掉这些属性
