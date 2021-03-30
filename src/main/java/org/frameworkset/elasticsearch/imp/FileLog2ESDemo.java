@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * <p>Description: 从日志文件采集日志数据并保存到</p>
@@ -65,7 +66,7 @@ public class FileLog2ESDemo {
 
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**
-		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@common字段值添加到记录中，文件插件支持的元信息字段如下：
+		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@filemeta字段值添加到记录中，文件插件支持的元信息字段如下：
 		 * hostIp：主机ip
 		 * hostName：主机名称
 		 * filePath： 文件路径
@@ -85,7 +86,7 @@ public class FileLog2ESDemo {
 		 *     "ipinfo": "",
 		 *     "newcollecttime": "2021-03-30T03:27:04.546Z",
 		 *     "author": "张无忌",
-		 *     "@common": {
+		 *     "@filemeta": {
 		 *       "path": "D:\\ecslog\\error-2021-03-27-1.log",
 		 *       "hostname": "",
 		 *       "pointer": 3342583,
@@ -99,7 +100,7 @@ public class FileLog2ESDemo {
 		 *
 		 * true 开启 false 关闭
 		 */
-		config.setEnableMeta(false);
+		config.setEnableMeta(true);
 		importBuilder.setFileImportConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 		importBuilder.setTargetElasticsearch("default");
@@ -158,6 +159,19 @@ public class FileLog2ESDemo {
 //				context.addFieldValue("author","duoduo");//将会覆盖全局设置的author变量
 				context.addFieldValue("title","解放");
 				context.addFieldValue("subtitle","小康");
+				
+				//如果日志是普通的文本日志，非json格式，则可以自己根据规则对包含日志记录内容的message字段进行解析
+				String message = context.getStringValue("@message");
+				/**
+				 * //解析示意代码
+				 * String[] fvs = message.split(" ");//空格解析字段
+				 * //将解析后的信息添加到记录中
+				 * context.addFieldValue("f1",fva[0]);
+				 * context.addFieldValue("f2",fva[1]);
+				 * context.addFieldValue("f3",fva[2]);
+				 */
+				//直接获取文件元信息
+				Map fileMata = (Map)context.getValue("@filemeta");
 				/**
 				 * 文件插件支持的元信息字段如下：
 				 * hostIp：主机ip
