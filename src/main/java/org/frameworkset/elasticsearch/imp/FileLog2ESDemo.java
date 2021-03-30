@@ -54,7 +54,9 @@ public class FileLog2ESDemo {
 		FileImportConfig config = new FileImportConfig();
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
-		config.addConfig("D:\\ecslog","error-2021-03-27-1.log","^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]");
+		config.addConfig("D:\\ecslog",//指定目录
+				"error-2021-03-27-1.log",//指定文件名称，可以是正则表达式
+				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]");//指定多行记录的开头识别标记，正则表达式
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		importBuilder.setFileImportConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称

@@ -1,23 +1,20 @@
 # 数据同步工具功能说明
-通过bboss数据同步工具，可以非常高效快速方便地将Elasticsearch和Database中的数据实时导出到文件并上传到SFTP/FTP服务器
+通过bboss数据同步工具，采集日志数据推送到elasticsearch插件案例:实时增量采集日志文件中的数据并写入elasticsearch
 # BBoss Environmental requirements
 
 JDK requirement: JDK 1.7+
 
-Elasticsearch version requirements: 1.x,2.X,5.X,6.X,+
+Elasticsearch version requirements: 1.x,2.X,5.X,6.X,7.x,+
 
 Spring booter 1.x,2.x,+
-# bboss elasticsearch 数据导入sftp/ftp工具demo
+# bboss elasticsearch 采集日志数据推送到elasticsearch插件demo
 使用本demo所带的应用程序运行容器环境，可以快速编写，打包发布可运行的数据导入工具
-
-支持的数据库：
-mysql,maridb，postgress,oracle ,sqlserver,db2等
 
 支持的Elasticsearch版本：
 1.x,2.x,5.x,6.x,+
 
 支持海量PB级数据同步导入功能
-支持sftp/ftp
+
 
 [使用参考文档](https://esdoc.bbossgroups.com/#/elasticsearch-sftp)
 
@@ -29,7 +26,7 @@ mysql,maridb，postgress,oracle ,sqlserver,db2等
 https://esdoc.bbossgroups.com/#/bboss-build
 
 ## 下载源码工程-基于gradle
-<https://github.com/bbossgroups/elasticsearch-file2ftp>
+<https://github.com/bbossgroups/filelog-elasticsearch>
 
 从上面的地址下载源码工程，然后导入idea或者eclipse，根据自己的需求，修改导入程序逻辑
 
@@ -56,14 +53,13 @@ public class Dbdemo {
 }
 ```
 
-修改es和数据库配置-elasticsearch-file2ftp\src\main\resources\application.properties
+修改es和数据库配置-filelog-elasticsearch\src\main\resources\application.properties
 
-elasticsearch-file2ftp工程已经内置mysql jdbc驱动，如果有依赖的第三方jdbc包（比如oracle驱动），可以将第三方jdbc依赖包放入elasticsearch-file2ftp\lib目录下
 
 修改完毕配置后，就可以进行功能调试了。
 
 
-测试调试通过后，就可以构建发布可运行的版本了：进入命令行模式，在源码工程根目录elasticsearch-file2ftp下运行以下gradle指令打包发布版本
+测试调试通过后，就可以构建发布可运行的版本了：进入命令行模式，在源码工程根目录filelog-elasticsearch下运行以下gradle指令打包发布版本
 
 release.bat
 
@@ -89,11 +85,11 @@ windows: restart.bat
 
 # 作业参数配置
 
-在使用[elasticsearch-file2ftp](https://github.com/bbossgroups/elasticsearch-file2ftp)时，为了避免调试过程中不断打包发布数据同步工具，可以将部分控制参数配置到启动配置文件resources/application.properties中,然后在代码中通过以下方法获取配置的参数：
+在使用[filelog-elasticsearch](https://github.com/bbossgroups/filelog-elasticsearch)时，为了避免调试过程中不断打包发布数据同步工具，可以将部分控制参数配置到启动配置文件resources/application.properties中,然后在代码中通过以下方法获取配置的参数：
 
 ```ini
 #作业运行主程序配置
-mainclass=org.frameworkset.elasticsearch.imp.ES2FileFtpBatchSplitFileDemo
+mainclass=org.frameworkset.elasticsearch.imp.FileLog2ESDemo
 
 # 参数配置
 # 在代码中获取方法：CommonLauncher.getBooleanAttribute("dropIndice",false);//同时指定了默认值false
