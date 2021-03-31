@@ -17,7 +17,6 @@ package org.frameworkset.elasticsearch.imp;
 
 import org.frameworkset.elasticsearch.ElasticSearchHelper;
 import org.frameworkset.elasticsearch.serial.SerialUtil;
-import org.frameworkset.spi.geoip.IpInfo;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.context.Context;
@@ -162,13 +161,14 @@ public class FileLog2ESDemo {
 				
 				//如果日志是普通的文本日志，非json格式，则可以自己根据规则对包含日志记录内容的message字段进行解析
 				String message = context.getStringValue("@message");
+				String[] fvs = message.split(" ");//空格解析字段
 				/**
 				 * //解析示意代码
 				 * String[] fvs = message.split(" ");//空格解析字段
 				 * //将解析后的信息添加到记录中
-				 * context.addFieldValue("f1",fva[0]);
-				 * context.addFieldValue("f2",fva[1]);
-				 * context.addFieldValue("f3",fva[2]);
+				 * context.addFieldValue("f1",fvs[0]);
+				 * context.addFieldValue("f2",fvs[1]);
+				 * context.addFieldValue("logVisitorial",fvs[2]);//包含ip信息
 				 */
 				//直接获取文件元信息
 				Map fileMata = (Map)context.getValue("@filemeta");
@@ -200,12 +200,13 @@ public class FileLog2ESDemo {
 				/**
 				 * 获取ip对应的运营商和区域信息
 				 */
-				IpInfo ipInfo = (IpInfo) context.getIpInfo("logVisitorial");
+				/**
+				IpInfo ipInfo = (IpInfo) context.getIpInfo(fvs[2]);
 				if(ipInfo != null)
 					context.addFieldValue("ipinfo", ipInfo);
 				else{
 					context.addFieldValue("ipinfo", "");
-				}
+				}*/
 				DateFormat dateFormat = SerialUtil.getDateFormateMeta().toDateFormat();
 //				Date optime = context.getDateValue("LOG_OPERTIME",dateFormat);
 //				context.addFieldValue("logOpertime",optime);
