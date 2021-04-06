@@ -20,6 +20,7 @@ import org.frameworkset.elasticsearch.serial.SerialUtil;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.context.Context;
+import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
 import org.slf4j.Logger;
@@ -55,13 +56,15 @@ public class FileLog2ESDemo {
 		FileImportConfig config = new FileImportConfig();
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
-		config.addConfig("D:\\ecslog",//指定目录
+		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
 				"error-2021-03-27-1.log",//指定文件名称，可以是正则表达式
-				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]");//指定多行记录的开头识别标记，正则表达式
+				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
+				.setCloseEOF(false))//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 
-		config.addConfig("D:\\ecslog",//指定目录
+		.addConfig(new FileConfig("D:\\ecslog",//指定目录
 				"es.log",//指定文件名称，可以是正则表达式
-				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]");//指定多行记录的开头识别标记，正则表达式
+				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
+				.setCloseEOF(true));//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**
