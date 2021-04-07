@@ -41,9 +41,14 @@ import java.util.Map;
 public class FileLog2ESDemo {
 	private static Logger logger = LoggerFactory.getLogger(FileLog2ESDemo.class);
 	public static void main(String[] args){
+
+//		Pattern pattern = Pattern.compile("(?!.*(endpoint)).*");
+//		logger.info(""+pattern.matcher("xxxxsssssssss").find());
+//		logger.info(""+pattern.matcher("xxxxsssendpointssssss").find());
 		try {
 			//清除测试表,导入的时候回重建表，测试的时候加上为了看测试效果，实际线上环境不要删表
-			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("dbdemo");
+			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("errorlog");
+			repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("eslog");
 			logger.info(repsonse);
 		} catch (Exception e) {
 		}
@@ -59,12 +64,18 @@ public class FileLog2ESDemo {
 		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
 				"error-2021-03-27-1.log",//指定文件名称，可以是正则表达式
 				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-				.setCloseEOF(false))//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+				.setMaxBytes(1048576)//控制每条日志的最大长度，超过长度将被截取掉
+				.setStartPointer(1000l)//设置采集的起始位置，日志内容偏移量
+				.addField("tag","error") //添加字段tag到记录中
+				.setExcludeLines(new String[]{"\\[DEBUG\\]"}))//不采集debug日志
 
 		.addConfig(new FileConfig("D:\\ecslog",//指定目录
 				"es.log",//指定文件名称，可以是正则表达式
 				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-				.setCloseEOF(true));//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+				.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+				.addField("tag","elasticsearch")//添加字段tag到记录中
+				.setExcludeLines(new String[]{".*endpoint.*"}));//采集不包含endpoint的日志
 
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**
