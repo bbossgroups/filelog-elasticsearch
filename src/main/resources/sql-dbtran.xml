@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<properties>
+    <description>
+        <![CDATA[
+	配置数据导入的sql
+ ]]>
+    </description>
+
+    <!--
+    插入数据sql
+    -->
+    <property name="insertSql">
+        <![CDATA[INSERT INTO `filelog`
+                (`message`,
+                `title`,
+                `collecttime`,
+                `author`,
+                `subtitle`,
+                `optime`,
+                `path`,
+                `hostname`,
+                `pointer`,
+                `hostip`,
+                `fileId`,
+                `tag`)
+                VALUES
+                (#[message],
+                #[title],
+                #[collecttime],
+                #[author],
+                #[subtitle],
+                #[optime],
+                #[filePath],
+                #[hostName],
+                #[pointer],
+                #[hostIp],
+                #[fileId],
+                #[tag])
+
+]]>
+    </property>
+    <!--
+   插入数据sql
+   -->
+    <property name="updateSql">
+        <![CDATA[update batchtest1 set author=#[author],
+        content=#[content], title=#[title], optime=#[optime], oper=#[oper], subtitle=#[subtitle], collecttime=#[collecttime],ipinfo=#[ipinfo]
+                where name=#[name]
+
+]]>
+    </property>
+
+    <!--
+   插入数据sql
+   -->
+    <property name="deleteSql">
+        <![CDATA[delete from batchtest1 where name=#[name]
+]]>
+    </property>
+
+</properties>
