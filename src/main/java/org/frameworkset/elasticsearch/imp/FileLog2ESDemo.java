@@ -66,7 +66,7 @@ public class FileLog2ESDemo {
 				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 				.setMaxBytes(1048576)//控制每条日志的最大长度，超过长度将被截取掉
-				.setStartPointer(1000l)//设置采集的起始位置，日志内容偏移量
+				//.setStartPointer(1000l)//设置采集的起始位置，日志内容偏移量
 				.addField("tag","error") //添加字段tag到记录中
 				.setExcludeLines(new String[]{"\\[DEBUG\\]"}))//不采集debug日志
 
