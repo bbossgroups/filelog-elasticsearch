@@ -75,6 +75,7 @@ public class FileLog2ESDemo {
 				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 				.addField("tag","elasticsearch")//添加字段tag到记录中
+				.setEnableInode(false)
 				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
 		);
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
