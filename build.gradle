@@ -37,6 +37,7 @@ configure(allprojects) { project ->
 			options.addStringOption('Xdoclint:none', '-quiet')
 		}
 	}
+
 	task sourcesJar(type: Jar) {
 		archiveClassifier = "sources"
 		from sourceSets.main.allJava
@@ -107,7 +108,7 @@ configure(allprojects) { project ->
 			}
 
 
-//			compileClasspath = configurations.compile + configurations.runtime
+//			compileClasspath = configurations.api + configurations.runtime
 		}
 		test {
 			java {
@@ -143,7 +144,7 @@ configure(allprojects) { project ->
 
 		api 'org.xerial:sqlite-jdbc:3.34.0'
 		//mysql 8.0依赖
-		//compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
+		//api group: 'mysql', name: 'mysql-connector-java', version: '8.0.16'
 		//mysql 5.x依赖
 		api 'mysql:mysql-connector-java:5.1.40'
 		api (
