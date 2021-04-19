@@ -76,6 +76,7 @@ public class FileLog2ESDemo {
 				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 				.addField("tag","elasticsearch")//添加字段tag到记录中
 				.setEnableInode(false)
+//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
 				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
 		);
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
