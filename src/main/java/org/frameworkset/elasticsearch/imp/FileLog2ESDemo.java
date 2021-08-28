@@ -19,11 +19,13 @@ import org.frameworkset.elasticsearch.ElasticSearchHelper;
 import org.frameworkset.elasticsearch.serial.SerialUtil;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
+import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
+import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +52,7 @@ public class FileLog2ESDemo {
 		try {
 			//清除测试表,导入的时候回重建表，测试的时候加上为了看测试效果，实际线上环境不要删表
 			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("errorlog");
-			repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("eslog");
+			repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("metrics-report");
 			logger.info(repsonse);
 		} catch (Exception e) {
 		}
@@ -61,6 +63,7 @@ public class FileLog2ESDemo {
 		importBuilder.setFlushInterval(10000l);
 
 		FileImportConfig config = new FileImportConfig();
+		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
 //		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
@@ -98,13 +101,13 @@ public class FileLog2ESDemo {
 //		);
 
 
-		config.addConfig(new FileConfig().setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\")//指定目录
-										.setFileHeadLineRegular("^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
+		config.addConfig(new FileConfig().setSourcePath("D:\\logs")//指定目录
+										.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 										.setFileFilter(new FileFilter() {
 											@Override
 											public boolean accept(File dir, String name, FileConfig fileConfig) {
 												//判断是否采集文件数据，返回true标识采集，false 不采集
-												return name.equals("es.log");
+												return name.equals("metrics-report.log");
 											}
 										})//指定文件过滤器
 										.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
@@ -155,7 +158,7 @@ public class FileLog2ESDemo {
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 		importBuilder.setTargetElasticsearch("default");
 		//指定索引名称，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
-		importBuilder.setIndex("filelog");
+		importBuilder.setIndex("metrics-report");
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
 		//importBuilder.setIndexType("idxtype");
 
@@ -234,12 +237,12 @@ public class FileLog2ESDemo {
 				 */
 				String filePath = (String)context.getMetaValue("filePath");
 				//可以根据文件路径信息设置不同的索引
-				if(filePath.endsWith("error-2021-03-27-1.log")) {
-					context.setIndex("errorlog");
-				}
-				else if(filePath.endsWith("es.log")){
-					 context.setIndex("eslog");
-				}
+//				if(filePath.endsWith("metrics-report.log")) {
+//					context.setIndex("metrics-report");
+//				}
+//				else if(filePath.endsWith("es.log")){
+//					 context.setIndex("eslog");
+//				}
 
 
 //				context.addIgnoreFieldMapping("title");
@@ -280,7 +283,27 @@ public class FileLog2ESDemo {
 			}
 		});
 		//映射和转换配置结束
+		importBuilder.setExportResultHandler(new ExportResultHandler<String,String>() {
+			@Override
+			public void success(TaskCommand<String,String> taskCommand, String o) {
+				logger.info("result:"+o);
+			}
 
+			@Override
+			public void error(TaskCommand<String,String> taskCommand, String o) {
+				logger.warn("error:"+o);
+			}
+
+			@Override
+			public void exception(TaskCommand<String,String> taskCommand, Exception exception) {
+				logger.warn("error:",exception);
+			}
+
+			@Override
+			public int getMaxRetry() {
+				return 0;
+			}
+		});
 		/**
 		 * 一次、作业创建一个内置的线程池，实现多线程并行数据导入elasticsearch功能，作业完毕后关闭线程池
 		 */
