@@ -15,21 +15,25 @@ package org.frameworkset.elasticsearch.imp;
  * limitations under the License.
  */
 
-import com.frameworkset.util.SimpleStringUtil;
-import org.frameworkset.tran.CommonRecord;
+import org.frameworkset.elasticsearch.entity.KeyMap;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
+import org.frameworkset.tran.Record;
 import org.frameworkset.tran.context.Context;
+import org.frameworkset.tran.db.DBConfigBuilder;
 import org.frameworkset.tran.input.file.FileConfig;
+import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
-import org.frameworkset.tran.ouput.dummy.DummyOupputConfig;
-import org.frameworkset.tran.output.dummy.FileLog2DummyExportBuilder;
-import org.frameworkset.tran.util.RecordGenerator;
+import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
+import org.frameworkset.tran.record.SplitHandler;
+import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Writer;
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>Description: 从日志文件采集日志数据并保存到</p>
@@ -39,16 +43,36 @@ import java.util.Date;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FileLog2DummyDemo {
-	private static Logger logger = LoggerFactory.getLogger(FileLog2DummyDemo.class);
+public class FileLog2DBWithRecordSplitDemo {
+	private static Logger logger = LoggerFactory.getLogger(FileLog2DBWithRecordSplitDemo.class);
 	public static void main(String[] args){
 
 
-		FileLog2DummyExportBuilder importBuilder = new FileLog2DummyExportBuilder();
+		FileLog2DBImportBuilder importBuilder = new FileLog2DBImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
+		importBuilder.setSplitFieldName("@message");
+		importBuilder.setSplitHandler(new SplitHandler() {
+			@Override
+			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,//调度任务上下文
+														   Record record,//原始记录对象
+														   Object splitValue) {
+//				Map<String,Object > data = (Map<String, Object>) record.getData();//获取原始记录中包含的数据对象
+				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
+				//模拟将数据切割为10条记录
+				for(int i = 0 ; i < 10; i ++){
+					KeyMap<String, Object> d = new KeyMap<String, Object>();
+					d.put("message",i+"-"+splitValue);
+//					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
+					splitDatas.add(d);
+				}
+				return splitDatas;
+			}
+		});
+		importBuilder.addFieldMapping("@message","message");
+		importBuilder.addFieldMapping("@timestamp","optime");
 //":null,"jdbcFetchSize":-2147483648,"dbDriver":"com.mysql.jdbc.Driver","dbUrl":"jdbc:mysql://192.168.137.1:3306/bboss?useUnicode=true&characterEncoding=utf-8&useSSL=false","dbUser":"root","dbPassword":"123456","initSize":100,"minIdleSize":100,"maxSize":100,"showSql":true,"usePool":true,"dbtype":null,"dbAdaptor":null,"columnLableUpperCase":false,"enableDBTransaction":false,"validateSQL":"select 1","dbName":"test"},"statusDbname":null,"statusTableDML":null,"fetchSize":10,"flushInterval":0,"ignoreNullValueField":false,"targetElasticsearch":"default","sourceElasticsearch":"default","clientOptions":null,"geoipConfig":null,"sortLastValue":true,"useBatchContextIndexName":false,"discardBulkResponse":true,"debugResponse":false,"scheduleConfig":{"scheduleDate":null,"deyLay":1000,"period":10000,"fixedRate":false,"externalTimer":false},"importIncreamentConfig":{"lastValueColumn":"logOpertime","lastValue":null,"lastValueType":1,"lastValueStorePath":"es2dbdemo_import","lastValueStoreTableName":null,"lastValueDateType":true,"fromFirst":true,"statusTableId":null},"externalTimer":false,"printTaskLog":true,"applicationPropertiesFile":null,"configs":null,"batchSize":2,"parallel":true,"threadCount":50,"queue":10,"asyn":false,"continueOnError":true,"asynResultPollTimeOut":1000,"useLowcase":null,"scheduleBatchSize":null,"index":null,"indexType":null,"useJavaName":null,"exportResultHandlerClass":null,"locale":null,"timeZone":null,"esIdGeneratorClass":"org.frameworkset.tran.DefaultEsIdGenerator","dataRefactorClass":"org.frameworkset.elasticsearch.imp.ES2DBScrollTimestampDemo$3","pagine":false,"scrollLiveTime":"10m","queryUrl":"dbdemo/_search","dsl2ndSqlFile":"dsl2ndSqlFile.xml","dslName":"scrollQuery","sliceQuery":false,"sliceSize":0,"targetIndex":null,"targetIndexType":null}
 		FileImportConfig config = new FileImportConfig();
 		//.*.txt.[0-9]+$
@@ -62,18 +86,21 @@ public class FileLog2DummyDemo {
 //				.addField("tag","error") //添加字段tag到记录中
 //				.setExcludeLines(new String[]{"\\[DEBUG\\]"}));//不采集debug日志
 
-		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
-				"es.log",//指定文件名称，可以是正则表达式
-				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-				.addField("tag","dummy")//添加字段tag到记录中
-				/**
-				 * 是否启用inode文件标识符机制来识别文件重命名操作，linux环境下起作用，windows环境下不起作用（enableInode强制为false）
-				 * linux环境下，在不存在重命名的场景下可以关闭inode文件标识符机制，windows环境下强制关闭inode文件标识符机制
-				 */
-				.setEnableInode(false)
-				.setExcludeLines(new String[]{".*endpoint.*"}));//采集不包含endpoint的日志
-
+		config.addConfig(new FileConfig().setSourcePath("D:\\logs")//指定目录
+						.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
+						.setFileFilter(new FileFilter() {
+							@Override
+							public boolean accept(File dir, String name, FileConfig fileConfig) {
+								//判断是否采集文件数据，返回true标识采集，false 不采集
+								return name.equals("metrics-report.log");
+							}
+						})//指定文件过滤器
+						.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+						.addField("tag","elasticsearch")//添加字段tag到记录中
+						.setEnableInode(false)
+				//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
+				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
+		);
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**
 		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@filemeta字段值添加到记录中，文件插件支持的元信息字段如下：
@@ -112,21 +139,35 @@ public class FileLog2DummyDemo {
 		 */
 		config.setEnableMeta(true);
 		importBuilder.setFileImportConfig(config);
+		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 
-		DummyOupputConfig dummyOupputConfig = new DummyOupputConfig();
-		dummyOupputConfig.setRecordGenerator(new RecordGenerator() {
-			@Override
-			public void buildRecord(Context taskContext, CommonRecord record, Writer builder) throws Exception{
-				SimpleStringUtil.object2json(record.getDatas(),builder);
+//导出到数据源配置
+		DBConfigBuilder dbConfigBuilder = new DBConfigBuilder();
+		dbConfigBuilder
+				.setSqlFilepath("sql-dbtran.xml")
 
-			}
-		}).setPrintRecord(true);
+				.setTargetDbName("test")//指定目标数据库，在application.properties文件中配置
+//				.setTargetDbDriver("com.mysql.jdbc.Driver") //数据库驱动程序，必须导入相关数据库的驱动jar包
+//				.setTargetDbUrl("jdbc:mysql://localhost:3306/bboss?useCursorFetch=true") //通过useCursorFetch=true启用mysql的游标fetch机制，否则会有严重的性能隐患，useCursorFetch必须和jdbcFetchSize参数配合使用，否则不会生效
+//				.setTargetDbUser("root")
+//				.setTargetDbPassword("123456")
+//				.setTargetValidateSQL("select 1")
+//				.setTargetUsePool(true)//是否使用连接池
+				.setInsertSqlName("insertSql")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
 
-		importBuilder.setDummyOupputConfig(dummyOupputConfig);
+				/**
+				 * 是否在批处理时，将insert、update、delete记录分组排序
+				 * true：分组排序，先执行insert、在执行update、最后执行delete操作
+				 * false：按照原始顺序执行db操作，默认值false
+				 * @param optimize
+				 * @return
+				 */
+				.setOptimize(true);//指定查询源库的sql语句，在配置文件中配置：sql-dbtran.xml
+		importBuilder.setOutputDBConfig(dbConfigBuilder.buildDBImportConfig());
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("filelogdummyb_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("filelogdbsplit_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 		//映射和转换配置开始
@@ -138,7 +179,7 @@ public class FileLog2DummyDemo {
 
 //
 
-		importBuilder.addFieldMapping("message","@message");
+
 		/**
 		 * 重新设置es数据结构
 		 */
@@ -186,9 +227,7 @@ public class FileLog2DummyDemo {
 				String hostIp = (String)context.getMetaValue("hostIp");
 				String hostName = (String)context.getMetaValue("hostName");
 				String fileId = (String)context.getMetaValue("fileId");
-				Date optime = (Date) context.getMetaValue("timestamp");
 				long pointer = (long)context.getMetaValue("pointer");
-				context.addFieldValue("optime",optime);
 				context.addFieldValue("filePath",filePath);
 				context.addFieldValue("hostIp",hostIp);
 				context.addFieldValue("hostName",hostName);

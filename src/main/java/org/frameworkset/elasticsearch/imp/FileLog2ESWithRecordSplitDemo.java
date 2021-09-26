@@ -16,22 +16,28 @@ package org.frameworkset.elasticsearch.imp;
  */
 
 import org.frameworkset.elasticsearch.ElasticSearchHelper;
+import org.frameworkset.elasticsearch.entity.KeyMap;
 import org.frameworkset.elasticsearch.serial.SerialUtil;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
+import org.frameworkset.tran.Record;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
+import org.frameworkset.tran.record.SplitHandler;
+import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -42,9 +48,29 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FileLog2ESDemo {
-	private static Logger logger = LoggerFactory.getLogger(FileLog2ESDemo.class);
+public class FileLog2ESWithRecordSplitDemo {
+	private static Logger logger = LoggerFactory.getLogger(FileLog2ESWithRecordSplitDemo.class);
 	public static void main(String[] args){
+		/**
+		 * 案例对应的表结构
+		 * CREATE TABLE
+		 *     filelog
+		 *     (
+		 *         MESSAGE text,
+		 *         title VARCHAR(1024),
+		 *         collecttime DATETIME,
+		 *         author VARCHAR(100),
+		 *         subtitle VARCHAR(450),
+		 *         optime DATETIME,
+		 *         path VARCHAR(200),
+		 *         hostname VARCHAR(100),
+		 *         pointer bigint(10),
+		 *         hostip VARCHAR(100),
+		 *         fileId VARCHAR(200),
+		 *         tag VARCHAR(45)
+		 *     )
+		 *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
+		 */
 
 //		Pattern pattern = Pattern.compile("(?!.*(endpoint)).*");
 //		logger.info(""+pattern.matcher("xxxxsssssssss").find());
@@ -61,23 +87,23 @@ public class FileLog2ESDemo {
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
-//		importBuilder.setSplitFieldName("@message");
-//		importBuilder.setSplitHandler(new SplitHandler() {
-//			@Override
-//			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,
-//														   Record record, Object splitValue) {
+		importBuilder.setSplitFieldName("@message");
+		importBuilder.setSplitHandler(new SplitHandler() {
+			@Override
+			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,
+														   Record record, Object splitValue) {
 //				Map<String,Object > data = (Map<String, Object>) record.getData();
-//				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
-//				//模拟将数据切割为10条记录
-//				for(int i = 0 ; i < 10; i ++){
-//					KeyMap<String, Object> d = new KeyMap<String, Object>();
-//					d.put("message",i+"-"+(String)data.get("@message"));
-////					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
-//					splitDatas.add(d);
-//				}
-//				return splitDatas;
-//			}
-//		});
+				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
+				//模拟将数据切割为10条记录
+				for(int i = 0 ; i < 10; i ++){
+					KeyMap<String, Object> d = new KeyMap<String, Object>();
+					d.put("message",i+"-"+splitValue);
+//					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
+					splitDatas.add(d);
+				}
+				return splitDatas;
+			}
+		});
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
 		config.setCharsetEncode("GB2312");
@@ -182,7 +208,7 @@ public class FileLog2ESDemo {
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("fileloges_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("filelogeslimit_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 		//映射和转换配置开始

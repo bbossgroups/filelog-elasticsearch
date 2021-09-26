@@ -20,11 +20,13 @@ import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.db.DBConfigBuilder;
 import org.frameworkset.tran.input.file.FileConfig;
+import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Date;
 
 /**
@@ -39,7 +41,26 @@ public class FileLog2DBDemo {
 	private static Logger logger = LoggerFactory.getLogger(FileLog2DBDemo.class);
 	public static void main(String[] args){
 
-
+/**
+ * 案例对应的表结构
+ * CREATE TABLE
+ *     filelog
+ *     (
+ *         MESSAGE text,
+ *         title VARCHAR(1024),
+ *         collecttime DATETIME,
+ *         author VARCHAR(100),
+ *         subtitle VARCHAR(450),
+ *         optime DATETIME,
+ *         path VARCHAR(200),
+ *         hostname VARCHAR(100),
+ *         pointer bigint(10),
+ *         hostip VARCHAR(100),
+ *         fileId VARCHAR(200),
+ *         tag VARCHAR(45)
+ *     )
+ *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ */
 		FileLog2DBImportBuilder importBuilder = new FileLog2DBImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
@@ -58,17 +79,21 @@ public class FileLog2DBDemo {
 //				.addField("tag","error") //添加字段tag到记录中
 //				.setExcludeLines(new String[]{"\\[DEBUG\\]"}));//不采集debug日志
 
-		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
-				"es.log",//指定文件名称，可以是正则表达式
-				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-				.addField("tag","elasticsearch")//添加字段tag到记录中
-				/**
-				 * 是否启用inode文件标识符机制来识别文件重命名操作，linux环境下起作用，windows环境下不起作用（enableInode强制为false）
-				 * linux环境下，在不存在重命名的场景下可以关闭inode文件标识符机制，windows环境下强制关闭inode文件标识符机制
-				 */
-				.setEnableInode(false)
-				.setExcludeLines(new String[]{".*endpoint.*"}));//采集不包含endpoint的日志
+		config.addConfig(new FileConfig().setSourcePath("D:\\logs")//指定目录
+						.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
+						.setFileFilter(new FileFilter() {
+							@Override
+							public boolean accept(File dir, String name, FileConfig fileConfig) {
+								//判断是否采集文件数据，返回true标识采集，false 不采集
+								return name.equals("metrics-report.log");
+							}
+						})//指定文件过滤器
+						.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+						.addField("tag","elasticsearch")//添加字段tag到记录中
+						.setEnableInode(false)
+				//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
+				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
+		);
 
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**
@@ -134,7 +159,7 @@ public class FileLog2DBDemo {
 				.setOptimize(true);//指定查询源库的sql语句，在配置文件中配置：sql-dbtran.xml
 		importBuilder.setOutputDBConfig(dbConfigBuilder.buildDBImportConfig());
 		//增量配置开始
-		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
 		importBuilder.setLastValueStorePath("filelogdb_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
@@ -145,9 +170,9 @@ public class FileLog2DBDemo {
 //		 * 可以配置mapping，也可以不配置，默认基于java 驼峰规则进行db field-es field的映射和转换
 //		 */
 
-		importBuilder.addFieldMapping("message","@message");
-//
+		importBuilder.addFieldMapping("@message","message");
 
+		importBuilder.addFieldMapping("@timestamp","optime");
 
 		/**
 		 * 重新设置es数据结构
@@ -196,9 +221,7 @@ public class FileLog2DBDemo {
 				String hostIp = (String)context.getMetaValue("hostIp");
 				String hostName = (String)context.getMetaValue("hostName");
 				String fileId = (String)context.getMetaValue("fileId");
-				Date optime = (Date) context.getMetaValue("timestamp");
 				long pointer = (long)context.getMetaValue("pointer");
-				context.addFieldValue("optime",optime);
 				context.addFieldValue("filePath",filePath);
 				context.addFieldValue("hostIp",hostIp);
 				context.addFieldValue("hostName",hostName);
