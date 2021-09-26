@@ -55,16 +55,23 @@ public class FileLog2DBWithRecordSplitDemo {
 		importBuilder.setFlushInterval(10000l);
 		importBuilder.setSplitFieldName("@message");
 		importBuilder.setSplitHandler(new SplitHandler() {
+			/**
+			 * 如果方法返回null，则继续将原记录写入目标库
+			 * @param taskContext
+			 * @param record
+			 * @param splitValue
+			 * @return
+			 */
 			@Override
 			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,//调度任务上下文
 														   Record record,//原始记录对象
-														   Object splitValue) {
+														   Object splitValue) {//待切割的字段值
 //				Map<String,Object > data = (Map<String, Object>) record.getData();//获取原始记录中包含的数据对象
 				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
 				//模拟将数据切割为10条记录
 				for(int i = 0 ; i < 10; i ++){
 					KeyMap<String, Object> d = new KeyMap<String, Object>();
-					d.put("message",i+"-"+splitValue);
+					d.put("message",i+"-"+splitValue);//我们只切割splitValue到message字段，继承原始记录中的其他字段
 //					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
 					splitDatas.add(d);
 				}
