@@ -15,6 +15,7 @@ package org.frameworkset.elasticsearch.imp;
  * limitations under the License.
  */
 
+import com.frameworkset.util.SimpleStringUtil;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.context.Context;
@@ -46,6 +47,7 @@ public class FileLog2DBDemo {
  * CREATE TABLE
  *     filelog
  *     (
+ *         id VARCHAR(100),
  *         MESSAGE text,
  *         title VARCHAR(1024),
  *         collecttime DATETIME,
@@ -57,7 +59,8 @@ public class FileLog2DBDemo {
  *         pointer bigint(10),
  *         hostip VARCHAR(100),
  *         fileId VARCHAR(200),
- *         tag VARCHAR(45)
+ *         tag VARCHAR(45),
+ *         PRIMARY KEY (id),
  *     )
  *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
  */
@@ -186,6 +189,9 @@ public class FileLog2DBDemo {
 //					return;
 //				}
 //				System.out.println(data);
+				if(context.getValue("id") == null){
+					context.addFieldValue("id", SimpleStringUtil.getUUID());
+				}
 
 //				context.addFieldValue("author","duoduo");//将会覆盖全局设置的author变量
 				context.addFieldValue("author","duoduo");

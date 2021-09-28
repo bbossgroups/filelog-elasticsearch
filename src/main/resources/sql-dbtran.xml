@@ -11,7 +11,7 @@
     -->
     <property name="insertSql">
         <![CDATA[INSERT INTO `filelog`
-                (`message`,
+                (`id`,`message`,
                 `title`,
                 `collecttime`,
                 `author`,
@@ -24,7 +24,7 @@
                 `fileId`,
                 `tag`)
                 VALUES
-                (#[message],
+                (#[id],#[message],
                 #[title],
                 #[collecttime],
                 #[author],
@@ -51,11 +51,52 @@
     </property>
 
     <!--
-   插入数据sql
+   删除数据sql
    -->
     <property name="deleteSql">
         <![CDATA[delete from batchtest1 where name=#[name]
 ]]>
+    </property>
+
+    <property name="insertCOLLECTION_MODULE">
+    <![CDATA[INSERT INTO COLLECTION_MODULE
+                (FLOW_ID, MODULE, EXT1, EXT2, EXT3, EXT4, EXT5, EXT6, EXT7, EXT8, EXT9, EXT10, EXT11, EXT12, EXT13, EXT14, EXT15, EXT16, EXT17, EXT18, EXT19, EXT20, EXT21, EXT22, EXT23, EXT24, EXT25, EXT26, EXT27, EXT28, EXT29, EXT30)
+                VALUES
+                (#[FLOW_ID],
+                #[MODULE],
+                #[EXT1],
+                #[EXT2],
+                #[EXT3],
+                #[EXT4],
+                #[EXT5],
+                #[EXT6],
+                #[EXT7],
+                #[EXT8],
+                #[EXT9],
+                #[EXT10],
+                #[EXT11],
+                #[EXT12],
+                #[EXT13],
+                #[EXT14],
+                #[EXT15],
+                #[EXT16],
+                #[EXT17],
+                #[EXT18],
+                #[EXT19],
+                #[EXT20],
+                #[EXT21],
+                #[EXT22],
+                #[EXT23],
+                #[EXT24],
+                #[EXT25],
+                #[EXT26],
+                #[EXT27],
+                #[EXT28],
+                #[EXT29],
+                #[EXT30]
+                )
+         ]]>
+
     </property>
 
 </properties>
