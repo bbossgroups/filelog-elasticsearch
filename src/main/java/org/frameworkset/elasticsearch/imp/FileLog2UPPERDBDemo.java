@@ -87,7 +87,7 @@ public class FileLog2UPPERDBDemo {
 						//.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 						.setFileFilter(new FileFilter() {
 							@Override
-							public boolean accept(File dir, String name, FileConfig fileConfig) {
+							public boolean accept(String dir, String name, FileConfig fileConfig) {
 								//判断是否采集文件数据，返回true标识采集，false 不采集
 								return name.equals("collection_module_20210926121012.json");
 							}

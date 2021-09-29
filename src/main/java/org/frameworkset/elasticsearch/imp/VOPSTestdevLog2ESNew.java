@@ -82,7 +82,7 @@ public class VOPSTestdevLog2ESNew {
 		config.addConfig(new FileConfig().setSourcePath(logPath)//指定目录
 						.setFileFilter(new FileFilter() {//根据文件名称动态判断目录下的文件是否需要被采集
 							@Override
-							public boolean accept(File dir, String name, FileConfig fileConfig) {
+							public boolean accept(String dir, String name, FileConfig fileConfig) {
 								for (int i = 0; i < fileNameArr.length; i++) {
 									String fileName = fileNameArr[i];
 									if(name.equals(fileName+".log"))

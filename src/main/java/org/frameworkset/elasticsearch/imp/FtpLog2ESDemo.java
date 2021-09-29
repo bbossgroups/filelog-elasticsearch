@@ -16,97 +16,74 @@ package org.frameworkset.elasticsearch.imp;
  */
 
 import org.frameworkset.elasticsearch.ElasticSearchHelper;
-import org.frameworkset.elasticsearch.entity.KeyMap;
 import org.frameworkset.elasticsearch.serial.SerialUtil;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
-import org.frameworkset.tran.Record;
 import org.frameworkset.tran.context.Context;
+import org.frameworkset.tran.ftp.FtpConfig;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
-import org.frameworkset.tran.record.SplitHandler;
-import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.text.DateFormat;
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Description: 从日志文件采集日志数据并保存到</p>
+ * <p>Description: 增量扫描ftp目录中日志文件，下载未采集过的日志文件，
+ * 然后采集日志数据并保存到elasticsearch，采集完毕后，备份日志文件到指定的目录下面，
+ * 定期清理备份目录下超过指定时间的备份日志文件
+ * </p>
  * <p></p>
  * <p>Copyright (c) 2020</p>
  * @Date 2021/2/1 14:39
  * @author biaoping.yin
  * @version 1.0
  */
-public class FileLog2ESWithRecordSplitDemo {
-	private static Logger logger = LoggerFactory.getLogger(FileLog2ESWithRecordSplitDemo.class);
+public class FtpLog2ESDemo {
+	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESDemo.class);
 	public static void main(String[] args){
-		/**
-		 * 案例对应的表结构
-		 * CREATE TABLE
-		 *     filelog
-		 *     (
-		 *         MESSAGE text,
-		 *         title VARCHAR(1024),
-		 *         collecttime DATETIME,
-		 *         author VARCHAR(100),
-		 *         subtitle VARCHAR(450),
-		 *         optime DATETIME,
-		 *         path VARCHAR(200),
-		 *         hostname VARCHAR(100),
-		 *         pointer bigint(10),
-		 *         hostip VARCHAR(100),
-		 *         fileId VARCHAR(200),
-		 *         tag VARCHAR(45)
-		 *     )
-		 *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
-		 */
 
-//		Pattern pattern = Pattern.compile("(?!.*(endpoint)).*");
-//		logger.info(""+pattern.matcher("xxxxsssssssss").find());
-//		logger.info(""+pattern.matcher("xxxxsssendpointssssss").find());
 		try {
 			//清除测试表,导入的时候回重建表，测试的时候加上为了看测试效果，实际线上环境不要删表
 //			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("errorlog");
-			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("metrics-report");
+			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("ftp-log");
 			logger.info(repsonse);
 		} catch (Exception e) {
 		}
 		FileLog2ESImportBuilder importBuilder = new FileLog2ESImportBuilder();
-		importBuilder.setBatchSize(500)//设置批量入库的记录数
+		importBuilder.setBatchSize(5000)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
-		importBuilder.setSplitFieldName("@message");
-		importBuilder.setSplitHandler(new SplitHandler() {
-			@Override
-			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,
-														   Record record, Object splitValue) {
+//		importBuilder.setSplitFieldName("@message");
+//		importBuilder.setSplitHandler(new SplitHandler() {
+//			@Override
+//			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,
+//														   Record record, Object splitValue) {
 //				Map<String,Object > data = (Map<String, Object>) record.getData();
-				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
-				//模拟将数据切割为10条记录
-				for(int i = 0 ; i < 10; i ++){
-					KeyMap<String, Object> d = new KeyMap<String, Object>();
-					d.put("message",i+"-"+splitValue);
-//					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
-					splitDatas.add(d);
-				}
-				return splitDatas;
-			}
-		});
+//				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
+//				//模拟将数据切割为10条记录
+//				for(int i = 0 ; i < 10; i ++){
+//					KeyMap<String, Object> d = new KeyMap<String, Object>();
+//					d.put("message",i+"-"+(String)data.get("@message"));
+////					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
+//					splitDatas.add(d);
+//				}
+//				return splitDatas;
+//			}
+//		});
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
-		config.setCharsetEncode("GB2312");
+		config.setInterval(30*60*1000l);//每隔半个小时扫描ftp目录下是否有最新ftp文件信息，采集完成或已经下载过的文件不会再下载采集
+//		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
 //		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
@@ -142,73 +119,61 @@ public class FileLog2ESWithRecordSplitDemo {
 ////				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
 //				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
 //		);
-
-
-		config.addConfig(new FileConfig().setSourcePath("D:\\logs")//指定目录
-										.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-										.setFileFilter(new FileFilter() {
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+		Date _startDate = null;
+		try {
+			_startDate = format.parse("20201211");//下载和采集2020年12月11日以后的数据文件
+		} catch (ParseException e) {
+			logger.error("",e);
+		}
+		final Date startDate = _startDate;
+		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+									    .setFtpUser("ecs").setFtpPassword("ecs@123")
+										.setRemoteFileDir("/home/ecs/failLog")
+										.setSourcePath("D:/ftplogs")//指定目录
+										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
-											public boolean accept(String dir, String name, FileConfig fileConfig) {
+											public boolean accept(String dir,//Ftp文件服务目录
+																  String name, //Ftp文件名称
+																  FileConfig fileConfig) {
 												//判断是否采集文件数据，返回true标识采集，false 不采集
-												return name.equals("metrics-report.log");
+												boolean nameMatch = name.startsWith("731_tmrt_user_login_day_");
+												if(nameMatch){
+													String day = name.substring("731_tmrt_user_login_day_".length());
+													SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
+													try {
+														Date fileDate = format.parse(day);
+														if(fileDate.after(startDate))//下载和采集2020年12月11日以后的数据文件
+															return true;
+													} catch (ParseException e) {
+														logger.error("",e);
+													}
+
+
+												}
+												return false;
 											}
-										})//指定文件过滤器
-										.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+										})
+
+										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+										.setEnableInode(false)//ftp插件禁用innode机制
 										.addField("tag","elasticsearch")//添加字段tag到记录中
-										.setEnableInode(false)
-				//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
-								//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
 						);
 
-//		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
-		/**
-		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@filemeta字段值添加到记录中，文件插件支持的元信息字段如下：
-		 * hostIp：主机ip
-		 * hostName：主机名称
-		 * filePath： 文件路径
-		 * timestamp：采集的时间戳
-		 * pointer：记录对应的截止文件指针,long类型
-		 * fileId：linux文件号，windows系统对应文件路径
-		 * 例如：
-		 * {
-		 *   "_index": "filelog",
-		 *   "_type": "_doc",
-		 *   "_id": "HKErgXgBivowv_nD0Jhn",
-		 *   "_version": 1,
-		 *   "_score": null,
-		 *   "_source": {
-		 *     "title": "解放",
-		 *     "subtitle": "小康",
-		 *     "ipinfo": "",
-		 *     "newcollecttime": "2021-03-30T03:27:04.546Z",
-		 *     "author": "张无忌",
-		 *     "@filemeta": {
-		 *       "path": "D:\\ecslog\\error-2021-03-27-1.log",
-		 *       "hostname": "",
-		 *       "pointer": 3342583,
-		 *       "hostip": "",
-		 *       "timestamp": 1617074824542,
-		 *       "fileId": "D:/ecslog/error-2021-03-27-1.log"
-		 *     },
-		 *     "message": "[18:04:40:161] [INFO] - org.frameworkset.tran.schedule.ScheduleService.externalTimeSchedule(ScheduleService.java:192) - Execute schedule job Take 3 ms"
-		 *   }
-		 * }
-		 *
-		 * true 开启 false 关闭
-		 */
 		config.setEnableMeta(true);
+//		config.setJsondata(true);
 		importBuilder.setFileImportConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 		importBuilder.setTargetElasticsearch("default");
 		//指定索引名称，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
-		importBuilder.setIndex("metrics-report");
+		importBuilder.setIndex("ftp-log");
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
 		//importBuilder.setIndexType("idxtype");
 
 		//增量配置开始
-		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("filelogeslimit_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("ftploges_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 		//映射和转换配置开始
