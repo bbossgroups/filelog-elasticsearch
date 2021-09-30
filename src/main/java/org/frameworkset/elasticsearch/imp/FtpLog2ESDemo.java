@@ -83,6 +83,26 @@ public class FtpLog2ESDemo {
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
 		config.setInterval(30*60*1000l);//每隔半个小时扫描ftp目录下是否有最新ftp文件信息，采集完成或已经下载过的文件不会再下载采集
+		/**
+		 * 备份采集完成文件
+		 * true 备份
+		 * false 不备份
+		 */
+		config.setBackupSuccessFiles(true);
+		/**
+		 * 备份文件目录
+		 */
+		config.setBackupSuccessFileDir("d:/ftpbackup");
+		/**
+		 * 备份文件清理线程执行时间间隔，单位：毫秒
+		 * 默认每隔10秒执行一次
+		 */
+		config.setBackupSuccessFileInterval(20000l);
+		/**
+		 * 备份文件保留时长，单位：秒
+		 * 默认保留7天
+		 */
+		config.setBackupSuccessFileLiveTime( 5 * 60l);
 //		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
@@ -154,7 +174,6 @@ public class FtpLog2ESDemo {
 												return false;
 											}
 										})
-
 										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 										.setEnableInode(false)//ftp插件禁用innode机制
 										.addField("tag","elasticsearch")//添加字段tag到记录中
