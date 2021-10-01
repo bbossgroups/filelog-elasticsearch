@@ -48,8 +48,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FtpLog2ESDemo {
-	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESDemo.class);
+public class FtpLog2ESETLScheduleDemo {
+	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESETLScheduleDemo.class);
 	public static void main(String[] args){
 
 		try {
@@ -83,7 +83,7 @@ public class FtpLog2ESDemo {
 //		});
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
-		config.setScanNewFileInterval(1*60*1000l);//每隔半1分钟扫描ftp目录下是否有最新ftp文件信息，采集完成或已经下载过的文件不会再下载采集
+		config.setUseETLScheduleForScanNewFile(true);//
 		/**
 		 * 备份采集完成文件
 		 * true 备份
