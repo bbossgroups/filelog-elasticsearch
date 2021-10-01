@@ -83,7 +83,22 @@ public class FtpLog2ESETLScheduleDemo {
 //		});
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
-		config.setUseETLScheduleForScanNewFile(true);//
+		/**
+		 *  设置是否采用外部新文件扫描调度机制：jdk timer,quartz,xxl-job
+		 *      true 采用，false 不采用，默认false
+		 */
+		config.setUseETLScheduleForScanNewFile(true);
+		//定时任务配置，
+		importBuilder.setFixedRate(false)//参考jdk timer task文档对fixedRate的说明
+//					 .setScheduleDate(date) //指定任务开始执行时间：日期
+				.setDeyLay(1000L) // 任务延迟执行deylay毫秒后执行
+				.setPeriod(1*60*1000l); //每隔period毫秒执行，如果不设置，只执行一次
+		//定时任务配置结束
+		//增量配置开始
+		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
+		importBuilder.setLastValueStorePath("ftplogetlschedulees_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		//增量配置结束
 		/**
 		 * 备份采集完成文件
 		 * true 备份
@@ -103,7 +118,7 @@ public class FtpLog2ESETLScheduleDemo {
 		 * 备份文件保留时长，单位：秒
 		 * 默认保留7天
 		 */
-		config.setBackupSuccessFileLiveTime( 5 * 60l);
+		config.setBackupSuccessFileLiveTime( 10 * 60l);
 //		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
@@ -174,11 +189,7 @@ public class FtpLog2ESETLScheduleDemo {
 												return false;
 											}
 										})
-										.addScanNewFileTimeRange("12:37-15:30")
-//										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftplogs")//指定目录
-										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
 
@@ -192,11 +203,7 @@ public class FtpLog2ESETLScheduleDemo {
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
 		//importBuilder.setIndexType("idxtype");
 
-		//增量配置开始
-		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
-		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("ftploges_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
-		//增量配置结束
+
 
 		//映射和转换配置开始
 //		/**

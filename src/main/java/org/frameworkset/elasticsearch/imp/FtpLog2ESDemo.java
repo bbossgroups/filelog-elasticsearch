@@ -103,7 +103,7 @@ public class FtpLog2ESDemo {
 		 * 备份文件保留时长，单位：秒
 		 * 默认保留7天
 		 */
-		config.setBackupSuccessFileLiveTime( 5 * 60l);
+		config.setBackupSuccessFileLiveTime( 10 * 60l);
 //		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
@@ -177,8 +177,6 @@ public class FtpLog2ESDemo {
 										.addScanNewFileTimeRange("12:37-15:30")
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftplogs")//指定目录
-										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
 
