@@ -15,7 +15,6 @@ package org.frameworkset.elasticsearch.imp;
  * limitations under the License.
  */
 
-import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import org.frameworkset.elasticsearch.ElasticSearchHelper;
 import org.frameworkset.elasticsearch.serial.SerialUtil;
 import org.frameworkset.tran.DataRefactor;
@@ -24,8 +23,8 @@ import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.ftp.FtpConfig;
 import org.frameworkset.tran.input.file.FileConfig;
+import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
-import org.frameworkset.tran.input.file.FtpFileFilter;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
@@ -167,9 +166,9 @@ public class FtpLog2ESETLScheduleDemo {
 						.setFtpUser("test").setFtpPassword("123456")
 						.setRemoteFileDir("/")
 						.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
-										.setFtpFileFilter(new FtpFileFilter() {//指定ftp文件筛选规则
+										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
-											public boolean accept(RemoteResourceInfo remoteResourceInfo,//Ftp文件服务目录
+											public boolean accept(String parentDir,//Ftp文件服务目录
 																  String name, //Ftp文件名称
 																  FileConfig fileConfig) {
 												//判断是否采集文件数据，返回true标识采集，false 不采集
