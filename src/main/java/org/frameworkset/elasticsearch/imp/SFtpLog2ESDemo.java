@@ -48,8 +48,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FtpLog2ESETLScheduleDemo {
-	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESETLScheduleDemo.class);
+public class SFtpLog2ESDemo {
+	private static Logger logger = LoggerFactory.getLogger(SFtpLog2ESDemo.class);
 	public static void main(String[] args){
 
 		try {
@@ -83,22 +83,7 @@ public class FtpLog2ESETLScheduleDemo {
 //		});
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
-		/**
-		 *  设置是否采用外部新文件扫描调度机制：jdk timer,quartz,xxl-job
-		 *      true 采用，false 不采用，默认false
-		 */
-		config.setUseETLScheduleForScanNewFile(true);
-		//定时任务配置，
-		importBuilder.setFixedRate(false)//参考jdk timer task文档对fixedRate的说明
-//					 .setScheduleDate(date) //指定任务开始执行时间：日期
-				.setDeyLay(1000L) // 任务延迟执行deylay毫秒后执行
-				.setPeriod(1*60*1000l); //每隔period毫秒执行，如果不设置，只执行一次
-		//定时任务配置结束
-		//增量配置开始
-		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
-		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("ftplogetlschedulees_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
-		//增量配置结束
+		config.setScanNewFileInterval(1*60*1000l);//每隔半1分钟扫描ftp目录下是否有最新ftp文件信息，采集完成或已经下载过的文件不会再下载采集
 		/**
 		 * 备份采集完成文件
 		 * true 备份
@@ -163,10 +148,10 @@ public class FtpLog2ESETLScheduleDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		config.addConfig(new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
-						.setFtpUser("test").setFtpPassword("123456")
-						.setRemoteFileDir("/")
-						.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
+		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+									    .setFtpUser("ecs").setFtpPassword("ecs@123")
+										.setRemoteFileDir("/home/ecs/failLog")
+										.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_SFTP) //采用sftp协议
 										.setFtpFileFilter(new FtpFileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(RemoteResourceInfo remoteResourceInfo,//Ftp文件服务目录
@@ -190,6 +175,8 @@ public class FtpLog2ESETLScheduleDemo {
 												return false;
 											}
 										})
+										.addScanNewFileTimeRange("12:37-20:30")
+//										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftplogs")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
@@ -204,7 +191,11 @@ public class FtpLog2ESETLScheduleDemo {
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
 		//importBuilder.setIndexType("idxtype");
 
-
+		//增量配置开始
+		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
+		importBuilder.setLastValueStorePath("ftploges_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		//增量配置结束
 
 		//映射和转换配置开始
 //		/**

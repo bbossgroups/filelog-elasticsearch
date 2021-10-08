@@ -49,6 +49,7 @@ public class FileLog2ESDemo {
 //		logger.info(""+pattern.matcher("xxxxsssssssss").find());
 //		logger.info(""+pattern.matcher("xxxxsssendpointssssss").find());
 		try {
+//			ElasticSearchHelper.getRestClientUtil().getDocumentByField("xxxx-*","requestId","xxxx");
 			//清除测试表,导入的时候回重建表，测试的时候加上为了看测试效果，实际线上环境不要删表
 //			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("errorlog");
 			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("metrics-report");

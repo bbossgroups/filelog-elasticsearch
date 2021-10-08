@@ -48,8 +48,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FtpLog2ESETLScheduleDemo {
-	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESETLScheduleDemo.class);
+public class SFtpLog2ESETLScheduleDemo {
+	private static Logger logger = LoggerFactory.getLogger(SFtpLog2ESETLScheduleDemo.class);
 	public static void main(String[] args){
 
 		try {
@@ -163,10 +163,9 @@ public class FtpLog2ESETLScheduleDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		config.addConfig(new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
-						.setFtpUser("test").setFtpPassword("123456")
-						.setRemoteFileDir("/")
-						.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
+		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+									    .setFtpUser("ecs").setFtpPassword("ecs@123")
+										.setRemoteFileDir("/home/ecs/failLog")
 										.setFtpFileFilter(new FtpFileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(RemoteResourceInfo remoteResourceInfo,//Ftp文件服务目录

@@ -148,9 +148,10 @@ public class FtpLog2ESDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
-									    .setFtpUser("ecs").setFtpPassword("ecs@123")
-										.setRemoteFileDir("/home/ecs/failLog")
+		config.addConfig(new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
+									    .setFtpUser("test").setFtpPassword("123456")
+										.setRemoteFileDir("/")
+										.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
 										.setFtpFileFilter(new FtpFileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(RemoteResourceInfo remoteResourceInfo,//Ftp文件服务目录
@@ -174,7 +175,7 @@ public class FtpLog2ESDemo {
 												return false;
 											}
 										})
-										.addScanNewFileTimeRange("12:37-15:30")
+										.addScanNewFileTimeRange("12:37-20:30")
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftplogs")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
