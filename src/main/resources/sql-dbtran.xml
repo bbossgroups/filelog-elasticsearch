@@ -99,4 +99,33 @@
 
     </property>
 
+    <!--
+ 案例对应的表结构
+CREATE TABLE
+    FTP_LOG
+    (
+        chanId VARCHAR(100),
+        phoneNumber VARCHAR(100),
+        eparchyName VARCHAR(100),
+        returnCode VARCHAR(100),
+        loginTime VARCHAR(100),
+        loginStatus VARCHAR(100)
+    )
+    ENGINE=InnoDB DEFAULT CHARSET=utf8;
+    -->
+    <property name="insertFTP_LOG">
+        <![CDATA[INSERT INTO FTP_LOG
+                (chanId, phoneNumber, eparchyName, returnCode,loginTime,loginStatus)
+                VALUES
+                (#[chanId],
+                #[phoneNumber],
+                #[eparchyName],
+                #[returnCode],
+                #[loginTime],
+                #[loginStatus]
+                )
+         ]]>
+
+    </property>
+
 </properties>

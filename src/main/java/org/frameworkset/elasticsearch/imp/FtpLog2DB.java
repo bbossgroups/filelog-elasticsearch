@@ -15,15 +15,17 @@ package org.frameworkset.elasticsearch.imp;
  * limitations under the License.
  */
 
-import net.schmizz.sshj.sftp.RemoteResourceInfo;
-import org.frameworkset.runtime.CommonLauncher;
+import org.frameworkset.elasticsearch.util.PropertiesUtil;
+import org.frameworkset.spi.assemble.PropertiesContainer;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.db.DBConfigBuilder;
 import org.frameworkset.tran.ftp.FtpConfig;
-import org.frameworkset.tran.input.file.*;
+import org.frameworkset.tran.input.file.FileConfig;
+import org.frameworkset.tran.input.file.FileFilter;
+import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.metrics.TaskMetrics;
 import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
 import org.frameworkset.tran.schedule.CallInterceptor;
@@ -47,6 +49,7 @@ import java.util.Date;
  * @Date 2021/09/28 11:25
  */
 public class FtpLog2DB {
+
     private static Logger logger = LoggerFactory.getLogger(FtpLog2DB.class);
 
     /**
@@ -79,7 +82,7 @@ public class FtpLog2DB {
 
     public static void scheduleTimestampImportData() {
         //获取配置文件-文件目录
-        //String data_dir = CommonLauncher.getProperty("DATA_DIR", "D:\\www\\input_data\\logs\\");  //数据获取目录
+        //String data_dir = propertiesContainer.getSystemEnvProperty("DATA_DIR", "D:\\www\\input_data\\logs\\");  //数据获取目录
 
 
         FileLog2DBImportBuilder importBuilder = new FileLog2DBImportBuilder();
@@ -102,7 +105,7 @@ public class FtpLog2DB {
         /**
          * 备份文件目录
          */
-        config.setBackupSuccessFileDir("D:\\www\\input_data\\ftpbackup\\");
+        config.setBackupSuccessFileDir("d:/ftpbackup");
         /**
          * 备份文件清理线程执行时间间隔，单位：毫秒
          * 默认每隔10秒执行一次
@@ -117,31 +120,31 @@ public class FtpLog2DB {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
         Date _startDate = null;
         try {
-            _startDate = format.parse("20201211");//下载和采集2020年12月11日以后的数据文件
+            _startDate = format.parse("20191211");//下载和采集2020年12月11日以后的数据文件
         } catch (ParseException e) {
             logger.error("", e);
         }
         final Date startDate = _startDate;
-        config.addConfig(new FtpConfig().setFtpIP("192.168.97.100").setFtpPort(21)
-                        .setFtpUser("zhxq02").setFtpPassword("******")
-                        .setRemoteFileDir("/")
-                        .setFtpFileFilter(new FtpFileFilter() {//指定ftp文件筛选规则
+        config.addConfig(new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
+                        .setFtpUser("test").setFtpPassword("123456")
+                        .setRemoteFileDir("/").setDeleteRemoteFile(true)//
+                        .setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
+                        .setFileFilter(new FileFilter() {//指定ftp文件筛选规则
                             @Override
-                            public boolean accept(RemoteResourceInfo remoteResourceInfo,//Ftp文件服务目录
+                            public boolean accept(String parentDir,//Ftp文件服务目录
                                                   String name, //Ftp文件名称
                                                   FileConfig fileConfig) {
                                 //判断是否采集文件数据，返回true标识采集，false 不采集
-                                boolean nameMatch = name.startsWith("collection_module_");
-                                System.out.println("测试name:" + name);
-                                if (nameMatch) {
-                                    String day = name.substring("collection_module__".length());
+                                boolean nameMatch = name.startsWith("731_tmrt_user_login_day_");
+                                if(nameMatch){
+                                    String day = name.substring("731_tmrt_user_login_day_".length());
                                     SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
                                     try {
                                         Date fileDate = format.parse(day);
-                                        if (fileDate.after(startDate))//下载和采集2020年12月11日以后的数据文件
+                                        if(fileDate.after(startDate))//下载和采集2020年12月11日以后的数据文件
                                             return true;
                                     } catch (ParseException e) {
-                                        logger.error("", e);
+                                        logger.error("",e);
                                     }
 
 
@@ -149,9 +152,9 @@ public class FtpLog2DB {
                                 return false;
                             }
                         })
-                        .addScanNewFileTimeRange("12:00-18:30")
+                        .addScanNewFileTimeRange("10:00-18:30")
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
-                        .setSourcePath("D:\\www\\input_data\\")//指定目录
+                        .setSourcePath("D:\\ftplogs\\dbdemo")//指定目录
                 //.addField("tag", "elasticsearch")//添加字段tag到记录中
                 //.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
                 //.setEnableInode(false)
@@ -167,7 +170,7 @@ public class FtpLog2DB {
         dbConfigBuilder
                 .setSqlFilepath("sql-dbtran.xml")
                 //.setDeleteSql("deleteSql")
-                .setInsertSqlName("insertCollectionModuleSql")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
+                .setInsertSqlName("insertFTP_LOG")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
                 //.setDeleteSql()
                 //.setUpdateSql()
                 /**
@@ -180,20 +183,21 @@ public class FtpLog2DB {
                 .setOptimize(true);//指定查询源库的sql语句，在配置文件中配置：sql-dbtran.xml
 
         //数据库相关配置参数(application.properties)
-        String dbName = CommonLauncher.getProperty("db.name", "oradb01");
-        String dbUser = CommonLauncher.getProperty("db.user", "NTHSJY");
-        String dbPassword = CommonLauncher.getProperty("db.password", "********");
-        String dbDriver = CommonLauncher.getProperty("db.driver", "oracle.jdbc.driver.OracleDriver");
-        String dbUrl = CommonLauncher.getProperty("db.url", "jdbc:oracle:thin:@192.168.97.100:1521:ORCLPDB1");
-        String showsql = CommonLauncher.getProperty("db.showsql", "false");
-        String validateSQL = CommonLauncher.getProperty(" db.validateSQL", "select 1 from dual");
-        //String dbInfoEncryptClass = CommonLauncher.getProperty("db.dbInfoEncryptClass");
-        boolean dbUsePool = CommonLauncher.getBooleanAttribute("db.usePool", true);
-        String dbInitSize = CommonLauncher.getProperty("db.initSize", "100");
-        String dbMinIdleSize = CommonLauncher.getProperty("db.minIdleSize", "100");
-        String dbMaxSize = CommonLauncher.getProperty("db.maxSize", "1000");
-        String dbJdbcFetchSize = CommonLauncher.getProperty("db.jdbcFetchSize", "10000");
-        boolean columnLableUpperCase = CommonLauncher.getBooleanAttribute("db.columnLableUpperCase", true);
+        PropertiesContainer propertiesContainer = PropertiesUtil.getPropertiesContainer();
+        String dbName = propertiesContainer.getSystemEnvProperty("db.name", "oradb01");
+        String dbUser = propertiesContainer.getSystemEnvProperty("db.user", "NTHSJY");
+        String dbPassword = propertiesContainer.getSystemEnvProperty("db.password", "********");
+        String dbDriver = propertiesContainer.getSystemEnvProperty("db.driver", "oracle.jdbc.driver.OracleDriver");
+        String dbUrl = propertiesContainer.getSystemEnvProperty("db.url", "jdbc:oracle:thin:@192.168.97.100:1521:ORCLPDB1");
+        String showsql = propertiesContainer.getSystemEnvProperty("db.showsql", "false");
+        String validateSQL = propertiesContainer.getSystemEnvProperty(" db.validateSQL", "select 1 from dual");
+        //String dbInfoEncryptClass = propertiesContainer.getSystemEnvProperty("db.dbInfoEncryptClass");
+        boolean dbUsePool = propertiesContainer.getBooleanProperty("db.usePool", true);
+        String dbInitSize = propertiesContainer.getSystemEnvProperty("db.initSize", "100");
+        String dbMinIdleSize = propertiesContainer.getSystemEnvProperty("db.minIdleSize", "100");
+        String dbMaxSize = propertiesContainer.getSystemEnvProperty("db.maxSize", "1000");
+        String dbJdbcFetchSize = propertiesContainer.getSystemEnvProperty("db.jdbcFetchSize", "10000");
+        boolean columnLableUpperCase = propertiesContainer.getBooleanProperty("db.columnLableUpperCase", true);
 
         dbConfigBuilder.setTargetDbName(dbName)//指定目标数据库，在application.properties文件中配置
                 .setTargetDbDriver(dbDriver) //数据库驱动程序，必须导入相关数据库的驱动jar包
@@ -216,75 +220,13 @@ public class FtpLog2DB {
         importBuilder.addCallInterceptor(new CallInterceptor() {
             @Override
             public void preCall(TaskContext taskContext) {
-                //PropertiesContainer propertiesContainerPreCall = new PropertiesContainer();
-                //propertiesContainerPreCall.addConfigPropertiesFile("application.properties");//加载配置文件
 
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
-                long start = System.currentTimeMillis();//预处理开始时间戳
-
-                //1、预处理，文件名处理
-                FileTaskContext fileTaskContext = (FileTaskContext) taskContext;
-                FileInfo fileInfo = fileTaskContext.getFileInfo();//文件信息
-
-                //System.out.println("****************" + fileInfo.getFileId());
-                String filePath = fileInfo.getFilePath();//文件路径，含文件名
-                String fileName = fileInfo.getFile().getName();//文件名
-                taskContext.addTaskData("filePath", filePath);//传递文件名及路径
-                taskContext.addTaskData("fileName", fileName);//传递文件名
-
-                //2、文件名fileName与可以允许的采集文件名规则进行比对
-                //2.1、DB模式，获取数据处理文件名字，进行匹配
-                //全局mysql连接,获取dex2_based的所有文件名称
-                String dbName = CommonLauncher.getProperty("db.name", "tzga"); //获取数据库名
-
-                //System.out.println("预处理：" + trasDataExBase.getDex_name());
-                //System.out.println("********************************************");
-
-                //可以在这里做一些重置初始化操作，比如删mapping之类的
-                //System.out.printf(fileName + ",预处理结束时间： " + df.format(new Date()) + ",耗时：%d millis\n", end - start);
-                Long end = System.currentTimeMillis();//结束时间戳
-                logger.info("预处理<" + fileName + ">结束耗时：" + (end - start) + " millis");
             }
 
             @Override
             public void afterCall(TaskContext taskContext) {
 
-                ////备份参数
-                //String bakup_data_dir = CommonLauncher.getProperty("BAKUP_DATA_DIR", "D:\\www\\input_data\\backup_datafile\\");  //数据备份目录
-                //int bak_day = CommonLauncher.getIntProperty("BAKUP_DAY", 7);  //数据周期
-                ////文件备份
-                ////System.out.println(taskContext.getTaskData("fileName").toString() + ",数据采集结束!");
-                //
-                ////备份文件
-                //File oldFilePath = new File(taskContext.getTaskData("filePath").toString());//旧文件
-                //
-                //SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd");
-                //String curdate_yyyymmdd = dateFormat.format(new Date()); //取当天日期
-                ////String curdate_yyyymmdd = DateUtils.getNowTime();//取当天日期
-                //
-                //CreatFileDir(bakup_data_dir + curdate_yyyymmdd);//目录不存在，则创建目录
-                //String fileName = taskContext.getTaskData("fileName").toString();
-                //File newFilePath = new File(bakup_data_dir + curdate_yyyymmdd + "/" + fileName);//新文件
-                ////System.out.println("备份文件：" + newFilePath);
-                //
-                ////延时一秒处理文件
-                //try {
-                //    Thread.sleep(2000);
-                //} catch (InterruptedException e) {
-                //    e.printStackTrace();
-                //}
-                //
-                //if (newFilePath.exists()) {
-                //    //System.out.println(fileName + "文件已存在，删除!");
-                //    logger.warn(fileName + "文件已存在，删除!");
-                //    oldFilePath.deleteOnExit();
-                //} else {
-                //    oldFilePath.renameTo(newFilePath);//重命名
-                //    //System.out.println(fileName + "备份成功");
-                //    logger.info(fileName + "备份成功");
-                //}
-                //
-                //logger.info(fileName + ",数据采集结束!");
+
             }
 
 
@@ -395,6 +337,14 @@ public class FtpLog2DB {
                 //context.addFieldValue("fileId", fileId);
                 //context.addFieldValue("pointer", pointer);
                 //context.addIgnoreFieldMapping("@filemeta");
+                String message = (String)context.getValue("@message");
+                String[] items = message.split("\t");
+                context.addFieldValue("chanId", items[0]);
+                context.addFieldValue("phoneNumber", items[1]);
+                context.addFieldValue("eparchyName", items[2]);
+                context.addFieldValue("returnCode", items[3]);
+                context.addFieldValue("loginTime", items[4]);
+                context.addFieldValue("loginStatus", "0000".equals(items[3]) ? "1" : "2");//1登录成功,2登录失败
 
             }
         });

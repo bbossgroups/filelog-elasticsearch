@@ -149,7 +149,7 @@ public class FtpLog2ESDemo {
 		final Date startDate = _startDate;
 		config.addConfig(new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
 									    .setFtpUser("test").setFtpPassword("123456")
-										.setRemoteFileDir("/")
+										.setRemoteFileDir("/").setDeleteRemoteFile(true)//
 										.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
@@ -174,7 +174,7 @@ public class FtpLog2ESDemo {
 												return false;
 											}
 										})
-										.addScanNewFileTimeRange("12:37-20:30")
+										.addScanNewFileTimeRange("8:37-20:30")
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftplogs")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
