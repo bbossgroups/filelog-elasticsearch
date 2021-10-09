@@ -345,7 +345,7 @@ public class FtpLog2DB {
                 context.addFieldValue("returnCode", items[3]);
                 context.addFieldValue("loginTime", items[4]);
                 context.addFieldValue("loginStatus", "0000".equals(items[3]) ? "1" : "2");//1登录成功,2登录失败
-
+                context.addIgnoreFieldMapping("@message");
             }
         });
         //映射和转换配置结束

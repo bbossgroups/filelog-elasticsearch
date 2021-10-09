@@ -22,14 +22,14 @@ import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileImportConfig;
-import org.frameworkset.tran.ouput.dummy.DummyOupputConfig;
+import org.frameworkset.tran.ouput.custom.CustomOutPut;
 import org.frameworkset.tran.output.dummy.FileLog2DummyExportBuilder;
-import org.frameworkset.tran.util.RecordGenerator;
+import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Writer;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>Description: 从日志文件采集日志数据并保存到</p>
@@ -39,8 +39,8 @@ import java.util.Date;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FileLog2DummyDemo {
-	private static Logger logger = LoggerFactory.getLogger(FileLog2DummyDemo.class);
+public class FileLog2CustomDemo {
+	private static Logger logger = LoggerFactory.getLogger(FileLog2CustomDemo.class);
 	public static void main(String[] args){
 
 
@@ -113,20 +113,27 @@ public class FileLog2DummyDemo {
 		config.setEnableMeta(true);
 		importBuilder.setFileImportConfig(config);
 
-		DummyOupputConfig dummyOupputConfig = new DummyOupputConfig();
-		dummyOupputConfig.setRecordGenerator(new RecordGenerator() {
+//		DummyOupputConfig dummyOupputConfig = new DummyOupputConfig();
+//		dummyOupputConfig.setRecordGenerator(new RecordGenerator() {
+//			@Override
+//			public void buildRecord(Context taskContext, CommonRecord record, Writer builder) throws Exception{
+//				SimpleStringUtil.object2json(record.getDatas(),builder);
+//
+//			}
+//		}).setPrintRecord(true);
+
+//		importBuilder.setDummyOupputConfig(dummyOupputConfig);
+		//自己处理数据
+		importBuilder.setCustomOutPut(new CustomOutPut() {
 			@Override
-			public void buildRecord(Context taskContext, CommonRecord record, Writer builder) throws Exception{
-				SimpleStringUtil.object2json(record.getDatas(),builder);
-
+			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
+				logger.info(SimpleStringUtil.object2json(datas));
 			}
-		}).setPrintRecord(true);
-
-		importBuilder.setDummyOupputConfig(dummyOupputConfig);
+		});
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("filelogdummyb_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("filelogcustom_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 		//映射和转换配置开始
@@ -139,7 +146,6 @@ public class FileLog2DummyDemo {
 //
 
 		importBuilder.addFieldMapping("@message","message");
-		importBuilder.addFieldMapping("@timestamp","timestamp");
 		/**
 		 * 重新设置es数据结构
 		 */
