@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Description: 从日志文件采集日志数据并保存到</p>
+ * <p>Description: 从日志文件采集日志数据并交给自定义处理器</p>
  * <p></p>
  * <p>Copyright (c) 2020</p>
  * @Date 2021/2/1 14:39
