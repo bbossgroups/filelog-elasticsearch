@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Description: 从日志文件采集日志数据并保存到</p>
@@ -127,7 +128,12 @@ public class FileLog2CustomDemo {
 		importBuilder.setCustomOutPut(new CustomOutPut() {
 			@Override
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
-				logger.info(SimpleStringUtil.object2json(datas));
+
+				//You can do any thing here for datas
+				for(CommonRecord record:datas){
+					Map<String,Object> data = record.getDatas();
+					logger.info(SimpleStringUtil.object2json(data));
+				}
 			}
 		});
 		//增量配置开始
