@@ -33,7 +33,6 @@ import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -90,13 +89,13 @@ public class FileLog2ESWithRecordSplitDemo {
 		importBuilder.setSplitFieldName("@message");
 		importBuilder.setSplitHandler(new SplitHandler() {
 			@Override
-			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,
+			public List<KeyMap> splitField(TaskContext taskContext,
 														   Record record, Object splitValue) {
 //				Map<String,Object > data = (Map<String, Object>) record.getData();
-				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
+				List<KeyMap> splitDatas = new ArrayList<>();
 				//模拟将数据切割为10条记录
 				for(int i = 0 ; i < 10; i ++){
-					KeyMap<String, Object> d = new KeyMap<String, Object>();
+					KeyMap d = new KeyMap();
 					d.put("message",i+"-"+splitValue);
 //					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
 					splitDatas.add(d);

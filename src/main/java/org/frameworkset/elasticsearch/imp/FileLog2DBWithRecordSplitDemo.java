@@ -31,7 +31,6 @@ import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -85,14 +84,14 @@ public class FileLog2DBWithRecordSplitDemo {
 			 * @return List<KeyMap<String, Object>> KeyMap是LinkedHashMap的子类，添加key字段，如果是往kafka推送数据，可以设置推送的key
 			 */
 			@Override
-			public List<KeyMap<String, Object>> splitField(TaskContext taskContext,//调度任务上下文
+			public List<KeyMap> splitField(TaskContext taskContext,//调度任务上下文
 														   Record record,//原始记录对象
 														   Object splitValue) {//待切割的字段值
 //				Map<String,Object > data = (Map<String, Object>) record.getData();//获取原始记录中包含的数据对象
-				List<KeyMap<String, Object>> splitDatas = new ArrayList<>();
+				List<KeyMap> splitDatas = new ArrayList<>();
 				//模拟将数据切割为10条记录
 				for(int i = 0 ; i < 10; i ++){
-					KeyMap<String, Object> d = new KeyMap<String, Object>();//创建新记录对象
+					KeyMap d = new KeyMap();//创建新记录对象
 					d.put("id", SimpleStringUtil.getUUID());//用新的id值覆盖原来的唯一标识id字段的值
 					d.put("message",i+"-"+splitValue);//我们只切割splitValue到message字段，继承原始记录中的其他字段
 //					d.setKey(SimpleStringUtil.getUUID());//如果是往kafka推送数据，可以设置推送的key
