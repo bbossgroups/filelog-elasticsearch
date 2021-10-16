@@ -47,8 +47,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class FtpLog2ESETLScheduleDemo {
-	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESETLScheduleDemo.class);
+public class FtpLog2ESETLTimerScheduleDemo {
+	private static Logger logger = LoggerFactory.getLogger(FtpLog2ESETLTimerScheduleDemo.class);
 	public static void main(String[] args){
 
 		try {
@@ -83,20 +83,22 @@ public class FtpLog2ESETLScheduleDemo {
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
 		/**
-		 *  设置是否采用外部新文件扫描调度机制：jdk timer,quartz,xxl-job
+		 *  设置是否采用外部新文件扫描调度机制：bboss timer,jdk timer,quartz,xxl-job
 		 *      true 采用，false 不采用，默认false
 		 */
 		config.setUseETLScheduleForScanNewFile(true);
 		//定时任务配置，
-		importBuilder.setFixedRate(false)//参考jdk timer task文档对fixedRate的说明
-//					 .setScheduleDate(date) //指定任务开始执行时间：日期
+		importBuilder.setScheduleSelf()//使用bboss自带的定时器,bboss timer
 				.setDeyLay(1000L) // 任务延迟执行deylay毫秒后执行
-				.setPeriod(1*60*1000l); //每隔period毫秒执行，如果不设置，只执行一次
+				.setPeriod(1*60*1000l)//每隔period毫秒执行，如果不设置，只执行一次
+				.addScanNewFileTimeRange("12:37-23:59");//添加每天调度执行的时间段，可以调用多次addScanNewFileTimeRange方法添加多个时间段
+				//添加每天排除的时间段（不调度执行作业），可以调用多次addSkipScanNewFileTimeRange方法添加多个时间段,设置addScanNewFileTimeRange，则SkipScanNewFileTimeRange不起作用
+//				.addSkipScanNewFileTimeRange("11:30-13:00");
 		//定时任务配置结束
 		//增量配置开始
 		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("ftplogetl1schedulees_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("ftplogetltimerschedulees_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 		/**
 		 * 备份采集完成文件
