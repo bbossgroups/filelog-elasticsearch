@@ -23,10 +23,10 @@ import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.ftp.FtpConfig;
-import org.frameworkset.tran.input.file.FileConfig;
-import org.frameworkset.tran.input.file.FileImportConfig;
-import org.frameworkset.tran.input.file.FtpFileFilter;
+import org.frameworkset.tran.input.file.*;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
+import org.frameworkset.tran.schedule.CallInterceptor;
+import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,7 +231,27 @@ public class SFtpLog2ESETLScheduleDemo {
 //		importBuilder.addFieldMapping("operModule","OPER_MODULE");
 //		importBuilder.addFieldMapping("logContent","LOG_CONTENT");
 
+		importBuilder.addCallInterceptor(new CallInterceptor() {
+			@Override
+			public void preCall(TaskContext taskContext) {
+				//文件开始被采集前调用
+				FileTaskContext fileTaskContext = (FileTaskContext)taskContext;
+				FileInfo fileInfo = fileTaskContext.getFileInfo();
+				taskContext.addTaskData("fileInfo",fileInfo);
+			}
 
+			@Override
+			public void afterCall(TaskContext taskContext) {
+				//文件采集完毕后执行，可以归档文件
+				FileTaskContext fileTaskContext = (FileTaskContext)taskContext;
+				FileInfo fileInfo = fileTaskContext.getFileInfo();
+			}
+
+			@Override
+			public void throwException(TaskContext taskContext, Exception e) {
+
+			}
+		});
 		/**
 		 * 重新设置es数据结构
 		 */

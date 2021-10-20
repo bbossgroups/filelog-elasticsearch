@@ -81,7 +81,7 @@ public class FileLog2DBWithRecordSplitDemo {
 			 * @param taskContext
 			 * @param record
 			 * @param splitValue
-			 * @return List<KeyMap<String, Object>> KeyMap是LinkedHashMap的子类，添加key字段，如果是往kafka推送数据，可以设置推送的key
+			 * @return List<KeyMap> KeyMap是LinkedHashMap的子类，添加key字段，如果是往kafka推送数据，可以设置推送的key
 			 */
 			@Override
 			public List<KeyMap> splitField(TaskContext taskContext,//调度任务上下文
