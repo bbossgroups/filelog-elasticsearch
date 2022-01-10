@@ -25,8 +25,6 @@ import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-
 /**
  * <p>Description: 从日志文件采集日志数据并保存到</p>
  * <p></p>
@@ -82,7 +80,8 @@ public class VOPSTestdevLog2ESNew {
 		config.addConfig(new FileConfig().setSourcePath(logPath)//指定目录
 						.setFileFilter(new FileFilter() {//根据文件名称动态判断目录下的文件是否需要被采集
 							@Override
-							public boolean accept(String dir, String name, FileConfig fileConfig) {
+							public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
+								String name = fileInfo.getFileName();
 								for (int i = 0; i < fileNameArr.length; i++) {
 									String fileName = fileNameArr[i];
 									if(name.equals(fileName+".log"))

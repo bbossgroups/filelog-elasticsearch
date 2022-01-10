@@ -128,4 +128,65 @@ CREATE TABLE
 
     </property>
 
+    <property name="insertcityperson">
+        <![CDATA[
+        INSERT INTO `cityperson`
+            (`rowNo`,
+            `shebao_org`,
+            `person_no`,
+            `name`,
+            `cert_type`,
+            `cert_no`,
+            `zhs_item`,
+            `zhs_class`,
+            `zhs_sub_class`,
+            `zhs_year`,
+            `zhs_level`)
+            VALUES
+            (#[rowNo],
+            #[shebao_org],
+            #[person_no],
+            #[name],
+            #[cert_type],
+            #[cert_no],
+            #[zhs_item],
+            #[zhs_class],
+            #[zhs_sub_class],
+            #[zhs_year],
+            #[zhs_level])
+         ]]>
+    </property>
+
+    <property name="insertnewmanrequests">
+        <![CDATA[
+        INSERT INTO `newmanrequests`
+            (`rowNo`,
+            `shebao_org`,
+            `person_no`,
+            `name`,
+            `cert_type`,
+            `cert_no`,
+            `zhs_item`,
+            `zhs_class`,
+            `zhs_sub_class`,
+            `zhs_year`,
+            `zhs_level`)
+            VALUES
+            (#[rowNo],
+            #[shebao_org],
+            #[person_no],
+            #[name],
+            #[cert_type],
+            #[cert_no],
+            #[zhs_item],
+            #[zhs_class],
+            #[zhs_sub_class],
+            #[zhs_year],
+            #[zhs_level])
+         ]]>
+    </property>
+
+
+
+
 </properties>

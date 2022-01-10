@@ -23,6 +23,7 @@ import org.frameworkset.tran.db.DBConfigBuilder;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
+import org.frameworkset.tran.input.file.FilterFileInfo;
 import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +86,9 @@ public class FileLog2DBDemo {
 						.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 						.setFileFilter(new FileFilter() {
 							@Override
-							public boolean accept(String dir, String name, FileConfig fileConfig) {
+							public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
 								//判断是否采集文件数据，返回true标识采集，false 不采集
-								return name.equals("metrics-report.log");
+								return fileInfo.getFileName().equals("metrics-report.log");
 							}
 						})//指定文件过滤器
 						.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化

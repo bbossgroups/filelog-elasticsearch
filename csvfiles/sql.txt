@@ -1,0 +1,13 @@
+CREATE TABLE cityperson ( rowNo int(8),
+shebao_org varchar(200) , person_no varchar(200), name varchar(200) , cert_type varchar(200),cert_no varchar(200) ,zhs_item varchar(200) ,zhs_class varchar(200),
+zhs_sub_class varchar(200) ,zhs_year varchar(200)  , zhs_level varchar(200) ,PRIMARY KEY(cert_no)) ENGINE=InnoDB
+
+
+CREATE TABLE newmanrequests (  rowNo int(8),
+shebao_org varchar(200) , person_no varchar(200), name varchar(200) , cert_type varchar(200),cert_no varchar(200) ,zhs_item varchar(200) ,zhs_class varchar(200),
+zhs_sub_class varchar(200) ,zhs_year varchar(200)  , zhs_level varchar(200) ,PRIMARY KEY(cert_no)) ENGINE=InnoDB
+
+shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
+社保经办机构（建议填写）	人员编号	*姓名	*证件类型	*证件号码	*征收项目	*征收品目	征收子目	*缴费年度	*缴费档次
+
+社保经办机构（建议填写）,人员编号,*姓名,*证件类型,*证件号码,*征收项目,*征收品目,征收子目,*缴费年度,*缴费档次

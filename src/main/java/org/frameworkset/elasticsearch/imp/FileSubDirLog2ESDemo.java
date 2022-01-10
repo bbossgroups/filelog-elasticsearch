@@ -35,15 +35,15 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * <p>Description: 从日志文件采集日志数据并保存到elasticsearch</p>
+ * <p>Description: 从日志文件目录及子目录采集日志数据并保存到elasticsearch</p>
  * <p></p>
  * <p>Copyright (c) 2020</p>
  * @Date 2021/2/1 14:39
  * @author biaoping.yin
  * @version 1.0
  */
-public class FileLog2ESDemo {
-	private static Logger logger = LoggerFactory.getLogger(FileLog2ESDemo.class);
+public class FileSubDirLog2ESDemo {
+	private static Logger logger = LoggerFactory.getLogger(FileSubDirLog2ESDemo.class);
 	public static void main(String[] args){
 
 //		Pattern pattern = Pattern.compile("(?!.*(endpoint)).*");
@@ -53,7 +53,9 @@ public class FileLog2ESDemo {
 //			ElasticSearchHelper.getRestClientUtil().getDocumentByField("xxxx-*","requestId","xxxx");
 			//清除测试表,导入的时候回重建表，测试的时候加上为了看测试效果，实际线上环境不要删表
 //			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("errorlog");
-			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("metrics-report");
+			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("subdir-report");
+			logger.info(repsonse);
+			repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("metrics-report");
 			logger.info(repsonse);
 		} catch (Exception e) {
 		}
@@ -82,55 +84,23 @@ public class FileLog2ESDemo {
 		importBuilder.addFieldMapping("@message","message");
 		FileImportConfig config = new FileImportConfig();
 		config.setCharsetEncode("GB2312");
-		//.*.txt.[0-9]+$
-		//[17:21:32:388]
-//		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
-//				"error-2021-03-27-1.log",//指定文件名称，可以是正则表达式
-//				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-//				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-//				.setMaxBytes(1048576)//控制每条日志的最大长度，超过长度将被截取掉
-//				//.setStartPointer(1000l)//设置采集的起始位置，日志内容偏移量
-//				.addField("tag","error") //添加字段tag到记录中
-//				.setExcludeLines(new String[]{"\\[DEBUG\\]"}));//不采集debug日志
-
-//		config.addConfig(new FileConfig("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\",//指定目录
-//				"es.log",//指定文件名称，可以是正则表达式
-//				"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-//				.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-//				.addField("tag","elasticsearch")//添加字段tag到记录中
-//				.setEnableInode(false)
-////				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
-//				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
-//		);
-//		config.addConfig(new FileConfig("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\",//指定目录
-//						new FileFilter() {
-//							@Override
-//							public boolean accept(File dir, String name, FileConfig fileConfig) {
-//								//判断是否采集文件数据，返回true标识采集，false 不采集
-//								return name.equals("es.log");
-//							}
-//						},//指定文件过滤器
-//						"^\\[[0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
-//						.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
-//						.addField("tag","elasticsearch")//添加字段tag到记录中
-//						.setEnableInode(false)
-////				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
-//				//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
-//		);
-
-
-		config.addConfig(new FileConfig().setSourcePath("D:\\logs")//指定目录
+		config.setBackupSuccessFiles(true);
+		config.setBackupSuccessFileDir("D:\\backup\\subdirlogs");
+		config.setBackupSuccessFileLiveTime( 5 * 60l);//备份文件保留5分钟
+		config.addConfig(new FileConfig().setSourcePath("D:\\subdirlogs")//指定目录
 										.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 										.setFileFilter(new FileFilter() {
 											@Override
 											public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
+												if(fileInfo.isDirectory())
+													return true;
 												//判断是否采集文件数据，返回true标识采集，false 不采集
-												return fileInfo.getFileName().equals("metrics-report.log");
+												return fileInfo.getFileName().equals("metrics-report.log") || fileInfo.getFileName().equals("metrics-subdir-report.log");
 											}
 										})//指定文件过滤器
-										.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 										.addField("tag","elasticsearch")//添加字段tag到记录中
-										.setEnableInode(false)
+										.setScanChild(true)
 				//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
 								//.setExcludeLines(new String[]{".*endpoint.*"}))//采集不包含endpoint的日志
 						);
@@ -176,14 +146,14 @@ public class FileLog2ESDemo {
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 		importBuilder.setTargetElasticsearch("default");
 		//指定索引名称，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
-		importBuilder.setIndex("metrics-report");
+		importBuilder.setIndex("subdir-report");
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
 		//importBuilder.setIndexType("idxtype");
 
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("fileloges_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("subdirfileloges_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 		//映射和转换配置开始
@@ -254,12 +224,12 @@ public class FileLog2ESDemo {
 				 */
 				String filePath = (String)context.getMetaValue("filePath");
 				//可以根据文件路径信息设置不同的索引
-//				if(filePath.endsWith("metrics-report.log")) {
-//					context.setIndex("metrics-report");
-//				}
-//				else if(filePath.endsWith("es.log")){
-//					 context.setIndex("eslog");
-//				}
+				if(filePath.endsWith("metrics-report.log")) {
+					context.setIndex("metrics-report");
+				}
+				else if(filePath.endsWith("metrics-subdir-report.log")){
+					 context.setIndex("subdir-report");
+				}
 
 
 //				context.addIgnoreFieldMapping("title");

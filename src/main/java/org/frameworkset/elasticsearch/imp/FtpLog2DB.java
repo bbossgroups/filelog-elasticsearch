@@ -26,6 +26,7 @@ import org.frameworkset.tran.ftp.FtpConfig;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileImportConfig;
+import org.frameworkset.tran.input.file.FilterFileInfo;
 import org.frameworkset.tran.metrics.TaskMetrics;
 import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
 import org.frameworkset.tran.schedule.CallInterceptor;
@@ -131,9 +132,9 @@ public class FtpLog2DB {
                         .setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
                         .setFileFilter(new FileFilter() {//指定ftp文件筛选规则
                             @Override
-                            public boolean accept(String parentDir,//Ftp文件服务目录
-                                                  String name, //Ftp文件名称
+                            public boolean accept(FilterFileInfo fileInfo,
                                                   FileConfig fileConfig) {
+                                String name = fileInfo.getFileName();
                                 //判断是否采集文件数据，返回true标识采集，false 不采集
                                 boolean nameMatch = name.startsWith("731_tmrt_user_login_day_");
                                 if(nameMatch){
