@@ -47,14 +47,14 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class SFtpLog2ESETLScheduleDemo {
-	private static Logger logger = LoggerFactory.getLogger(SFtpLog2ESETLScheduleDemo.class);
+public class SFtpSubdirLog2ESETLScheduleDemo {
+	private static Logger logger = LoggerFactory.getLogger(SFtpSubdirLog2ESETLScheduleDemo.class);
 	public static void main(String[] args){
 
 		try {
 			//清除测试表,导入的时候回重建表，测试的时候加上为了看测试效果，实际线上环境不要删表
 //			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("errorlog");
-			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("ftp-log");
+			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("ftpsubdir-log");
 			logger.info(repsonse);
 		} catch (Exception e) {
 		}
@@ -96,7 +96,7 @@ public class SFtpLog2ESETLScheduleDemo {
 		//增量配置开始
 		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("sftpdir_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("sftpsubdir_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 		/**
 		 * 备份采集完成文件
@@ -107,7 +107,7 @@ public class SFtpLog2ESETLScheduleDemo {
 		/**
 		 * 备份文件目录
 		 */
-		config.setBackupSuccessFileDir("d:/ftpbackup");
+		config.setBackupSuccessFileDir("d:/sftpbackup");
 		/**
 		 * 备份文件清理线程执行时间间隔，单位：毫秒
 		 * 默认每隔10秒执行一次
@@ -164,12 +164,14 @@ public class SFtpLog2ESETLScheduleDemo {
 		final Date startDate = _startDate;
 		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
 									    .setFtpUser("ecs").setFtpPassword("ecs@123")
-										.setRemoteFileDir("/home/ecs/failLog")
+										.setRemoteFileDir("/home/ecs/ftp")//指定sftp根目录
+										.setDeleteRemoteFile(true)//下载文件成功完成后，删除对应的ftp文件，false 不删除 true 删除
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(FilterFileInfo filterFileInfo, //Ftp文件名称
 																  FileConfig fileConfig) {
-
+												if(filterFileInfo.isDirectory())
+													return true;
 												String name = filterFileInfo.getFileName();
 												//判断是否采集文件数据，返回true标识采集，false 不采集
 												boolean nameMatch = name.startsWith("731_tmrt_user_login_day_");
@@ -189,7 +191,8 @@ public class SFtpLog2ESETLScheduleDemo {
 												return false;
 											}
 										})
-										.setSourcePath("D:/ftplogs")//指定目录
+										.setScanChild(true)
+										.setSourcePath("D:/sftplogs")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
 
@@ -199,7 +202,7 @@ public class SFtpLog2ESETLScheduleDemo {
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 		importBuilder.setTargetElasticsearch("default");
 		//指定索引名称，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
-		importBuilder.setIndex("ftp-log");
+		importBuilder.setIndex("ftpsubdir-log");
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
 		//importBuilder.setIndexType("idxtype");
 

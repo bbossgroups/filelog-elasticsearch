@@ -124,6 +124,8 @@ public class FtpSubdirLog2ESDemo {
 											@Override
 											public boolean accept(FilterFileInfo fileInfo, //Ftp文件名称
 																  FileConfig fileConfig) {
+												if(fileInfo.isDirectory())//需要扫描ftp子目录
+													return true;
 												String name = fileInfo.getFileName();
 												//判断是否采集文件数据，返回true标识采集，false 不采集
 												boolean nameMatch = name.startsWith("731_tmrt_user_login_day_");
@@ -143,7 +145,8 @@ public class FtpSubdirLog2ESDemo {
 												return false;
 											}
 										})
-										.addScanNewFileTimeRange("8:37-20:30")
+//										.addScanNewFileTimeRange("8:37-20:30")
+									    .setScanChild(true)
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftplogs")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
