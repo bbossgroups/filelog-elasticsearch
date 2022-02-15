@@ -148,10 +148,11 @@ public class SFtpLog2ESDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
-									    .setFtpUser("ecs").setFtpPassword("ecs@123")
-										.setRemoteFileDir("/home/ecs/failLog")
-										.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_SFTP) //采用sftp协议
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+				.setFtpUser("ecs").setFtpPassword("ecs@123")
+				.setRemoteFileDir("/home/ecs/failLog")
+				.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_SFTP) ;//采用sftp协议
+		config.addConfig(new FileConfig().setFtpConfig(ftpConfig)
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(FilterFileInfo fileInfo, //Ftp文件名称

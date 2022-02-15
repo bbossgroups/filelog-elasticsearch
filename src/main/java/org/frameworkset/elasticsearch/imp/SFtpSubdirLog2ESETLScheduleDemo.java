@@ -162,10 +162,11 @@ public class SFtpSubdirLog2ESETLScheduleDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		config.addConfig(new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
-									    .setFtpUser("ecs").setFtpPassword("ecs@123")
-										.setRemoteFileDir("/home/ecs/ftp")//指定sftp根目录
-										.setDeleteRemoteFile(true)//下载文件成功完成后，删除对应的ftp文件，false 不删除 true 删除
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+				.setFtpUser("ecs").setFtpPassword("ecs@123")
+				.setRemoteFileDir("/home/ecs/ftp")//指定sftp根目录
+				.setDeleteRemoteFile(true);//下载文件成功完成后，删除对应的ftp文件，false 不删除 true 删除
+		config.addConfig(new FileConfig().setFtpConfig(ftpConfig)
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(FilterFileInfo filterFileInfo, //Ftp文件名称

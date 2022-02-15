@@ -163,10 +163,11 @@ public class FtpLog2ESETLScheduleDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		config.addConfig(new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
-						.setFtpUser("test").setFtpPassword("123456")
-						.setRemoteFileDir("/")
-						.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP) //采用ftp协议
+		FtpConfig ftpConfig= new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(222)
+				.setFtpUser("test").setFtpPassword("123456")
+				.setRemoteFileDir("/")
+				.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_FTP); //采用ftp协议
+		config.addConfig(new FileConfig().setFtpConfig(ftpConfig)
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(FilterFileInfo fileInfo, //Ftp文件名称
