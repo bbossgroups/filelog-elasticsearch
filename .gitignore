@@ -11,3 +11,5 @@
 
 es.log
 *.bak
+csvfiles/cityperson.csv
+csvfiles/newmanrequests.csv
