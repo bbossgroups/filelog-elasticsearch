@@ -24,7 +24,7 @@
                 `fileId`,
                 `tag`)
                 VALUES
-                (#[id],#[message],
+                (#[id],#[message,type=clob],
                 #[title],
                 #[collecttime],
                 #[author],
