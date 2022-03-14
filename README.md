@@ -4,14 +4,14 @@
 
 JDK requirement: JDK 1.7+
 
-Elasticsearch version requirements: 1.x,2.X,5.X,6.X,7.x,+
+Elasticsearch version requirements: 1.x,2.X,5.X,6.X,7.x,8.x,+
 
 Spring booter 1.x,2.x,+
 # bboss elasticsearch 采集日志数据推送到elasticsearch插件demo
 使用本demo所带的应用程序运行容器环境，可以快速编写，打包发布可运行的数据导入工具
 
 支持的Elasticsearch版本：
-1.x,2.x,5.x,6.x,+
+1.x,2.x,5.x,6.x,7.x,8.x,+
 
 支持海量PB级数据同步导入功能
 
@@ -30,25 +30,30 @@ https://esdoc.bbossgroups.com/#/bboss-build
 
 从上面的地址下载源码工程，然后导入idea或者eclipse，根据自己的需求，修改导入程序逻辑
 
-org.frameworkset.elasticsearch.imp.Dbdemo
+org.frameworkset.elasticsearch.imp.FileLog2ESDemo
 
-如果需要测试和调试导入功能，运行Dbdemo的main方法即可即可：
+如果需要测试和调试导入功能，运行FileLog2ESDemo的main方法即可即可：
 
 
 ```java
-public class Dbdemo {
-	public static void main(String args[]){
+public class FileLog2ESDemo {
+	private static Logger logger = LoggerFactory.getLogger(FileLog2ESDemo.class);
+	public static void main(String[] args){
 
-		long t = System.currentTimeMillis();
-		Dbdemo dbdemo = new Dbdemo();
-		String repsonse = ElasticSearchHelper.getRestClientUtil().getIndice("dbdemo");
-		boolean dropIndice = true;//CommonLauncher.getBooleanAttribute("dropIndice",false);//同时指定了默认值
-		dbdemo.scheduleImportData(  dropIndice);//定时增量导入
-//		dbdemo.scheduleFullImportData(dropIndice);//定时全量导入
 
-//		dbdemo.scheduleFullAutoUUIDImportData(dropIndice);//定时全量导入，自动生成UUID
-//		dbdemo.scheduleDatePatternImportData(dropIndice);//定时增量导入，按日期分表yyyy.MM.dd
-	}
+		try {
+			String repsonse = ElasticSearchHelper.getRestClientUtil().dropIndice("metrics-report");
+			logger.info(repsonse);
+		} catch (Exception e) {
+		}
+		FileLog2ESImportBuilder importBuilder = new FileLog2ESImportBuilder();
+		importBuilder.setBatchSize(500)//设置批量入库的记录数
+				.setFetchSize(1000);//设置按批读取文件行数
+		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
+		importBuilder.setFlushInterval(10000l);
+
+		importBuilder.addFieldMapping("@message","message");
+		FileImportConfig config = new FileImportConfig();
     .....
 }
 ```
