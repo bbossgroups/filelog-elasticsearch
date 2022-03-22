@@ -21,11 +21,10 @@ import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.context.Context;
-import org.frameworkset.tran.input.file.FileConfig;
-import org.frameworkset.tran.input.file.FileFilter;
-import org.frameworkset.tran.input.file.FileImportConfig;
-import org.frameworkset.tran.input.file.FilterFileInfo;
+import org.frameworkset.tran.input.file.*;
 import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
+import org.frameworkset.tran.schedule.CallInterceptor;
+import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ public class FileLog2ESDemo {
 		} catch (Exception e) {
 		}
 		FileLog2ESImportBuilder importBuilder = new FileLog2ESImportBuilder();
-		importBuilder.setBatchSize(500)//设置批量入库的记录数
+		importBuilder.setBatchSize(40)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
@@ -128,7 +127,7 @@ public class FileLog2ESDemo {
 												return fileInfo.getFileName().equals("metrics-report.log");
 											}
 										})//指定文件过滤器
-										.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 										.setEnableInode(false)
 				//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志
@@ -331,6 +330,28 @@ public class FileLog2ESDemo {
 		importBuilder.setAsyn(false);//true 异步方式执行，不等待所有导入作业任务结束，方法快速返回；false（默认值） 同步方式执行，等待所有导入作业任务结束，所有作业结束后方法才返回
 		importBuilder.setPrintTaskLog(true);
 
+		importBuilder.addCallInterceptor(new CallInterceptor() {
+			@Override
+			public void preCall(TaskContext taskContext) {
+
+			}
+
+			@Override
+			public void afterCall(TaskContext taskContext) {
+				if(taskContext != null) {
+					FileTaskContext fileTaskContext = (FileTaskContext)taskContext;
+					logger.info("文件{}导入情况:{}",fileTaskContext.getFileInfo().getOriginFilePath(),taskContext.getJobTaskMetrics().toString());
+				}
+			}
+
+			@Override
+			public void throwException(TaskContext taskContext, Exception e) {
+				if(taskContext != null) {
+					FileTaskContext fileTaskContext = (FileTaskContext)taskContext;
+					logger.info("文件{}导入情况:{}",fileTaskContext.getFileInfo().getOriginFilePath(),taskContext.getJobTaskMetrics().toString());
+				}
+			}
+		});
 		/**
 		 * 启动es数据导入文件并上传sftp/ftp作业
 		 */
