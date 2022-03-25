@@ -16,8 +16,7 @@ package org.frameworkset.elasticsearch.imp;
  */
 
 import com.frameworkset.util.SimpleStringUtil;
-import org.frameworkset.nosql.redis.RedisFactory;
-import org.frameworkset.nosql.redis.RedisHelper;
+import org.frameworkset.nosql.redis.RedisTool;
 import org.frameworkset.tran.CommonRecord;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
@@ -38,6 +37,7 @@ import org.frameworkset.tran.schedule.CallInterceptor;
 import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.ClusterPipeline;
 
 import java.io.File;
 import java.util.Date;
@@ -45,15 +45,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Description:  从ftp服务器下载excel文件，采集excel文件中数据并交给自定义处理器按单条写入redis，redis配置参考resources/redis.xml配置文件</p>
+ * <p>Description: 从ftp服务器下载excel文件，采集excel文件中数据并交给自定义处理器批量写入redis，redis配置参考resources/redis.xml配置文件</p>
  * <p></p>
  * <p>Copyright (c) 2020</p>
  * @Date 2021/2/1 14:39
  * @author biaoping.yin
  * @version 1.0
  */
-public class FTPFileLog2CustomRedisDemo {
-	private static Logger logger = LoggerFactory.getLogger(FTPFileLog2CustomRedisDemo.class);
+public class FTPFileLog2CustomRedisBatchDemo {
+	private static Logger logger = LoggerFactory.getLogger(FTPFileLog2CustomRedisBatchDemo.class);
 	public static void main(String[] args){
 
 
@@ -110,6 +110,7 @@ public class FTPFileLog2CustomRedisDemo {
 					public boolean accept(FilterFileInfo fileInfo, //Ftp文件名称
 										  FileConfig fileConfig) {
 						String name = fileInfo.getFileName();
+//						//判断是否采集文件数据，返回true标识采集，false 不采集
 
 						if(name.startsWith("湖南师大2021年新生医保（2021年）申报名单-合并"))
 							return true;
@@ -184,30 +185,37 @@ public class FTPFileLog2CustomRedisDemo {
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
 				//You can do any thing here for datas
-				//单笔记录处理
-				RedisHelper redisHelper = null;
-				RedisHelper redisHelper1 = null;
+
+
+				ClusterPipeline clusterPipeline = null;
+//				ClusterPipeline clusterPipeline1 = null;//可以写多个redis集群
+				//批量处理
 				try {
-					redisHelper = RedisFactory.getRedisHelper();
-					redisHelper1 = RedisFactory.getRedisHelper("redis1");
+					clusterPipeline = RedisTool.getInstance().getClusterPipelined();
+//					clusterPipeline1 = RedisTool.getInstance("redis1").getClusterPipelined();//可以写多个redis集群
 
 					for (CommonRecord record : datas) {
 						Map<String, Object> data = record.getDatas();
 						String cert_no = (String)data.get("cert_no");
 //					logger.info(SimpleStringUtil.object2json(data));
 						String valuedata = SimpleStringUtil.object2json(data);
-						redisHelper.hset("xingchenma", cert_no, valuedata);
-						redisHelper.hset("xingchenma", cert_no, valuedata);
+						logger.debug("cert_no:{}",cert_no);
+						clusterPipeline.hset("xingchenma1", cert_no, valuedata);
+//						clusterPipeline1.hset("xingchenma2", cert_no, valuedata);
 					}
+					clusterPipeline.sync();
+
+//					clusterPipeline1.sync();//可以写多个redis集群
 				}
 				finally {
-					if(redisHelper != null)
-						redisHelper.release();
-					if(redisHelper1 != null)
-						redisHelper1.release();
+					if(clusterPipeline != null){
+						clusterPipeline.close();
+					}
+
+//					if(clusterPipeline1 != null){//可以写多个redis集群
+//						clusterPipeline1.close();
+//					}
 				}
-
-
 			}
 		});
 		//增量配置开始
@@ -216,6 +224,7 @@ public class FTPFileLog2CustomRedisDemo {
 		importBuilder.setLastValueStorePath("filelogcustom_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
+		//映射和转换配置开始
 
 		/**
 		 * 重新设置es数据结构
