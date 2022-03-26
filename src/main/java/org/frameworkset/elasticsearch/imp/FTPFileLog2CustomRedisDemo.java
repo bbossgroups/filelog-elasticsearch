@@ -23,9 +23,8 @@ import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.ftp.FtpConfig;
-import org.frameworkset.tran.ftp.FtpContext;
-import org.frameworkset.tran.ftp.RemoteFileAction;
 import org.frameworkset.tran.ftp.RemoteFileValidate;
+import org.frameworkset.tran.ftp.ValidateContext;
 import org.frameworkset.tran.input.excel.ExcelFileConfig;
 import org.frameworkset.tran.input.excel.ExcelFileImportConfig;
 import org.frameworkset.tran.input.file.FileConfig;
@@ -39,7 +38,6 @@ import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -68,23 +66,32 @@ public class FTPFileLog2CustomRedisDemo {
 				.setFtpUser("ecs").setFtpPassword("ecs@123").setDownloadWorkThreads(4)
 				.setRemoteFileDir("/home/ecs/failLog").setRemoteFileValidate(new RemoteFileValidate() {
 					/**
-					 * 可以在此处进行下载的数据文件md5校验，记录数校验
-					 * @param dataFile  下载到本地的临时数据文件，只有文件校验通过后才会移到正式文件
-					 * @param remoteFile
-					 * @param ftpContext
-					 * @param remoteFileAction 通过接口下载其他文件，比如remoteFile对应的md5签名文件、记录校验文件,根据本地文件地址，计算本地md5文件的路径
-					 * @param redownload
-					 * @return
+					 * 校验数据文件合法性和完整性接口
+
+					 * @param validateContext 封装校验数据文件信息
+					 *     dataFile 待校验零时数据文件，可以根据文件名称获取对应文件的md5签名文件名、数据量稽核文件名称等信息，
+					 *     remoteFile 通过数据文件对应的ftp/sftp文件路径，计算对应的目录获取md5签名文件、数据量稽核文件所在的目录地址
+					 *     ftpContext ftp配置上下文对象
+					 *     然后通过remoteFileAction下载md5签名文件、数据量稽核文件，再对数据文件进行校验即可
+					 *     redownload 标记校验来源是否是因校验失败重新下载文件导致的校验操作，true 为重下后 文件校验，false为第一次下载校验
+					 * @return int
+					 * 文件内容校验成功
+					 * 	RemoteFileValidate.FILE_VALIDATE_OK = 1;
+					 * 	校验失败不处理文件
+					 * 	RemoteFileValidate.FILE_VALIDATE_FAILED = 2;
+					 * 	文件内容校验失败并备份已下载文件
+					 * 	RemoteFileValidate.FILE_VALIDATE_FAILED_BACKUP = 3;
+					 * 	文件内容校验失败并删除已下载文件
+					 * 	RemoteFileValidate.FILE_VALIDATE_FAILED_DELETE = 5;
 					 */
-					@Override
-					public Result validateFile(File dataFile,String remoteFile, FtpContext ftpContext, RemoteFileAction remoteFileAction,boolean redownload) {
-						if(redownload)
+					public Result validateFile(ValidateContext validateContext)  {
+						if(validateContext.isRedownload())
 							return Result.default_ok;
 //						return Result.default_ok;
 						Result result = new Result();
 						result.setValidateResult(RemoteFileValidate.FILE_VALIDATE_FAILED_REDOWNLOAD);
 						result.setRedownloadCounts(3);
-						result.setMessage("MD5校验"+remoteFile+"失败，重试3次");
+						result.setMessage("MD5校验"+validateContext.getRemoteFile()+"失败，重试3次");
 						//根据remoteFile的信息计算md5文件路径地址，并下载，下载务必后进行签名校验
 						//remoteFileAction.downloadFile("remoteFile.md5","dataFile.md5");
 						return result;
