@@ -2,7 +2,7 @@
 通过bboss数据同步工具，采集日志数据推送到elasticsearch插件案例:实时增量采集日志文件中的数据并写入elasticsearch
 # BBoss Environmental requirements
 
-JDK requirement: JDK 1.7+
+JDK requirement: JDK 1.8+
 
 Elasticsearch version requirements: 1.x,2.X,5.X,6.X,7.x,8.x,+
 
