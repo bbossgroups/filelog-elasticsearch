@@ -21,8 +21,8 @@
 
 -Xms1g
 -Xmx1g
--XX:NewSize=512m
--XX:MaxNewSize=512m
+#-XX:NewSize=512m
+#-XX:MaxNewSize=512m
 # explicitly set the stack size
 -Xss1m
 
