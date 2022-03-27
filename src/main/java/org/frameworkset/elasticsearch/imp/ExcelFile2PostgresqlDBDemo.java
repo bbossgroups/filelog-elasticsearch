@@ -42,8 +42,8 @@ import org.slf4j.LoggerFactory;
  * @author biaoping.yin
  * @version 1.0
  */
-public class ExcelFile2DBDemo {
-	private static Logger logger = LoggerFactory.getLogger(ExcelFile2DBDemo.class);
+public class ExcelFile2PostgresqlDBDemo {
+	private static Logger logger = LoggerFactory.getLogger(ExcelFile2PostgresqlDBDemo.class);
 	public static void main(String[] args){
 
 /**
@@ -112,14 +112,14 @@ public class ExcelFile2DBDemo {
 		dbConfigBuilder
 				.setSqlFilepath("sql-dbtran.xml")
 
-				.setTargetDbName("test")//指定目标数据库，在application.properties文件中配置
+				.setTargetDbName("postgres")//指定目标数据库，在application.properties文件中配置
 //				.setTargetDbDriver("com.mysql.cj.jdbc.Driver") //数据库驱动程序，必须导入相关数据库的驱动jar包
 //				.setTargetDbUrl("jdbc:mysql://localhost:3306/bboss?useCursorFetch=true") //通过useCursorFetch=true启用mysql的游标fetch机制，否则会有严重的性能隐患，useCursorFetch必须和jdbcFetchSize参数配合使用，否则不会生效
 //				.setTargetDbUser("root")
 //				.setTargetDbPassword("123456")
 //				.setTargetValidateSQL("select 1")
 //				.setTargetUsePool(true)//是否使用连接池
-				.setInsertSqlName("insertcityperson")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
+				.setInsertSqlName("insertcitypersonpostgresql")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
 
 				/**
 				 * 是否在批处理时，将insert、update、delete记录分组排序
@@ -133,7 +133,7 @@ public class ExcelFile2DBDemo {
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("excelfilemysql_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("excelfilelogdb_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 
