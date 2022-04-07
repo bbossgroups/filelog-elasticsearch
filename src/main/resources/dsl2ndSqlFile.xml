@@ -13,42 +13,15 @@
          "query": {
                 "bool": {
                     "filter": [
-                        ## 可以设置同步数据的过滤参数条件
-                        #*
-                        {
-                            "term": {
-                                "var1.keyword": #[var1]
-                            }
-                        },
-                        {
-                            "term": {
-                                "var2.keyword": #[var2]
-                            }
-                        },
-                        {
-                            "term": {
-                                "var3.keyword": #[var3]
-                            }
-                        },
-                        *#
+
                         {   ## 增量检索范围，可以是时间范围，也可以是数字范围，这里采用的是数字增量字段
                             "range": {
-                                #if($logId)
-                                "logId": {
-                                    "gt": #[logId] ## 数字增量检索字段
-                                }
-                                #end
-                                #if($logOpertime)
-                                "logOpertime": {
-                                    "gt": #[logOpertime] ## 时间增量检索字段
-                                }
-                                #end
-                                #if($collecttime)
+
                                 "collecttime": {
                                     "gt": #[collecttime],
                                     "lte": #[collecttime__endTime]
                                 }
-                                #end
+
                             }
                         }
                     ]

@@ -16,7 +16,8 @@ package org.frameworkset.elasticsearch.imp;
  */
 
 import com.frameworkset.util.SimpleStringUtil;
-import org.frameworkset.nosql.redis.RedisTool;
+import org.frameworkset.nosql.redis.RedisFactory;
+import org.frameworkset.nosql.redis.RedisHelper;
 import org.frameworkset.tran.CommonRecord;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
@@ -30,8 +31,8 @@ import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.ClusterPipeline;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +44,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class Elasticsearch2CustomRedisBatchDemo {
-	private static Logger logger = LoggerFactory.getLogger(Elasticsearch2CustomRedisBatchDemo.class);
+public class Elasticsearch2CustomRedisDemo {
+	private static Logger logger = LoggerFactory.getLogger(Elasticsearch2CustomRedisDemo.class);
 	public static void main(String[] args){
 
 
@@ -61,7 +62,7 @@ public class Elasticsearch2CustomRedisBatchDemo {
 //				.setSliceQuery(true)
 //				.setSliceSize(5)
 				.setQueryUrl("dbdemo/_search")
-
+				.addParam("fullImport",false)
 //				//添加dsl中需要用到的参数及参数值
 //				.addParam("var1","v1")
 //				.addParam("var2","v2")
@@ -74,14 +75,12 @@ public class Elasticsearch2CustomRedisBatchDemo {
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
 				//You can do any thing here for datas
-
-
-				ClusterPipeline clusterPipeline = null;
-//				ClusterPipeline clusterPipeline1 = null;//可以写多个redis集群
-				//批量处理
+				//单笔记录处理
+				RedisHelper redisHelper = null;
+				RedisHelper redisHelper1 = null;
 				try {
-					clusterPipeline = RedisTool.getInstance().getClusterPipelined();
-//					clusterPipeline1 = RedisTool.getInstance("redis1").getClusterPipelined();//可以写多个redis集群
+					redisHelper = RedisFactory.getRedisHelper();
+					redisHelper1 = RedisFactory.getRedisHelper("redis1");
 
 					for (CommonRecord record : datas) {
 						Map<String, Object> data = record.getDatas();
@@ -89,21 +88,16 @@ public class Elasticsearch2CustomRedisBatchDemo {
 //					logger.info(SimpleStringUtil.object2json(data));
 						String valuedata = SimpleStringUtil.object2json(data);
 						logger.debug("LOG_ID:{}",LOG_ID);
-						clusterPipeline.hset("xingchenma1", LOG_ID, valuedata);
-//						clusterPipeline1.hset("xingchenma2", cert_no, valuedata);
+//					logger.info(SimpleStringUtil.object2json(data));
+						redisHelper.hset("xingchenma", LOG_ID, valuedata);
+						redisHelper.hset("xingchenma", LOG_ID, valuedata);
 					}
-					clusterPipeline.sync();
-
-//					clusterPipeline1.sync();//可以写多个redis集群
 				}
 				finally {
-					if(clusterPipeline != null){
-						clusterPipeline.close();
-					}
-
-//					if(clusterPipeline1 != null){//可以写多个redis集群
-//						clusterPipeline1.close();
-//					}
+					if(redisHelper != null)
+						redisHelper.release();
+					if(redisHelper1 != null)
+						redisHelper1.release();
 				}
 			}
 		});
@@ -115,10 +109,9 @@ public class Elasticsearch2CustomRedisBatchDemo {
 		//增量配置开始
 		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("esbatchredis_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("esredis_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		importBuilder.setLastValueColumn("collecttime");
 		importBuilder.setLastValueType(ImportIncreamentConfig.TIMESTAMP_TYPE);
-		//增量配置结束
 
 		//映射和转换配置开始
 
@@ -130,6 +123,7 @@ public class Elasticsearch2CustomRedisBatchDemo {
 				//可以根据条件定义是否丢弃当前记录
 				//context.setDrop(true);return;
 
+				context.addFieldValue("collecttime",new Date());
 
 
 
@@ -166,6 +160,7 @@ public class Elasticsearch2CustomRedisBatchDemo {
 			@Override
 			public void afterCall(TaskContext taskContext) {
 				if(taskContext != null) {
+					taskContext.await();//等待数据异步处理完成
 					logger.info("数据导入情况:{}",taskContext.getJobTaskMetrics().toString());
 				}
 			}
@@ -174,8 +169,7 @@ public class Elasticsearch2CustomRedisBatchDemo {
 			public void throwException(TaskContext taskContext, Exception e) {
 				if(taskContext != null) {
 					taskContext.await();//等待数据异步处理完成
-
-					logger.info("数据导入情况:{}",taskContext.getJobTaskMetrics().toString(),e);
+					logger.info("数据导入情况:{}",taskContext.getJobTaskMetrics().toString());
 				}
 			}
 		});
