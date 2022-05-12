@@ -64,6 +64,7 @@ public class FtpAvl2ESDemo {
 		importBuilder.setFlushInterval(10000l);
 
 		FileImportConfig config = new FileImportConfig();
+		config.setSleepAwaitTimeAfterFetch(100l);//采集完一批数据，等待一会再采集下一批数据，避免大量文件采集时，cpu占用过高
 		config.setScanNewFileInterval(1*60*1000l);//每隔半1分钟扫描ftp目录下是否有最新ftp文件信息，采集完成或已经下载过的文件不会再下载采集
 		/**
 		 * 备份采集完成文件
@@ -88,7 +89,7 @@ public class FtpAvl2ESDemo {
 
 		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(21)
 				.setFtpUser("ecsftp").setFtpPassword("ecsftp").setDownloadWorkThreads(3)//设置4个线程并行下载文件，可以允许最多4个文件同时下载
-				.setRemoteFileDir("xcm_back").setRemoteFileValidate(new RemoteFileValidate() {
+				.setRemoteFileDir("xcm").setRemoteFileValidate(new RemoteFileValidate() {
 					/**
 					 * 校验数据文件合法性和完整性接口
 
@@ -251,7 +252,7 @@ public class FtpAvl2ESDemo {
 		 */
 		importBuilder.setParallel(true);//设置为多线程并行批量导入,false串行
 		importBuilder.setQueue(10);//设置批量导入线程池等待队列长度
-		importBuilder.setThreadCount(15);//设置批量导入线程池工作线程数量
+		importBuilder.setThreadCount(5);//设置批量导入线程池工作线程数量
 		importBuilder.setContinueOnError(true);//任务出现异常，是否继续执行作业：true（默认值）继续执行 false 中断作业执行
 		importBuilder.setAsyn(false);//true 异步方式执行，不等待所有导入作业任务结束，方法快速返回；false（默认值） 同步方式执行，等待所有导入作业任务结束，所有作业结束后方法才返回
 		importBuilder.setPrintTaskLog(true);
@@ -259,7 +260,7 @@ public class FtpAvl2ESDemo {
 		/**
 		 * 启动es数据导入文件并上传sftp/ftp作业
 		 */
-		DataStream dataStream = importBuilder.builder();
+		DataStream dataStream = importBuilder.builder(true);
 		dataStream.execute();//启动同步作业
 		logger.info("job started.");
 	}
