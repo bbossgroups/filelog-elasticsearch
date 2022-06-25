@@ -20,10 +20,14 @@ import org.frameworkset.elasticsearch.entity.KeyMap;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.Record;
+import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
-import org.frameworkset.tran.db.DBConfigBuilder;
-import org.frameworkset.tran.input.file.*;
-import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
+import org.frameworkset.tran.input.file.FileConfig;
+import org.frameworkset.tran.input.file.FileFilter;
+import org.frameworkset.tran.input.file.FileTaskContext;
+import org.frameworkset.tran.input.file.FilterFileInfo;
+import org.frameworkset.tran.plugin.db.output.DBOutputConfig;
+import org.frameworkset.tran.plugin.file.input.FileInputConfig;
 import org.frameworkset.tran.record.SplitHandler;
 import org.frameworkset.tran.schedule.CallInterceptor;
 import org.frameworkset.tran.schedule.TaskContext;
@@ -68,7 +72,7 @@ public class FileLog2DBWithRecordSplit2ndCustomSQLForFileDemo {
  *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
  */
 
-		FileLog2DBImportBuilder importBuilder = new FileLog2DBImportBuilder();
+		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
@@ -102,7 +106,7 @@ public class FileLog2DBWithRecordSplit2ndCustomSQLForFileDemo {
 		importBuilder.addFieldMapping("@message","message");
 		importBuilder.addFieldMapping("@timestamp","optime");
 //":null,"jdbcFetchSize":-2147483648,"dbDriver":"com.mysql.cj.jdbc.Driver","dbUrl":"jdbc:mysql://192.168.137.1:3306/bboss?useUnicode=true&characterEncoding=utf-8&useSSL=false","dbUser":"root","dbPassword":"123456","initSize":100,"minIdleSize":100,"maxSize":100,"showSql":true,"usePool":true,"dbtype":null,"dbAdaptor":null,"columnLableUpperCase":false,"enableDBTransaction":false,"validateSQL":"select 1","dbName":"test"},"statusDbname":null,"statusTableDML":null,"fetchSize":10,"flushInterval":0,"ignoreNullValueField":false,"targetElasticsearch":"default","sourceElasticsearch":"default","clientOptions":null,"geoipConfig":null,"sortLastValue":true,"useBatchContextIndexName":false,"discardBulkResponse":true,"debugResponse":false,"scheduleConfig":{"scheduleDate":null,"deyLay":1000,"period":10000,"fixedRate":false,"externalTimer":false},"importIncreamentConfig":{"lastValueColumn":"logOpertime","lastValue":null,"lastValueType":1,"lastValueStorePath":"es2dbdemo_import","lastValueStoreTableName":null,"lastValueDateType":true,"fromFirst":true,"statusTableId":null},"externalTimer":false,"printTaskLog":true,"applicationPropertiesFile":null,"configs":null,"batchSize":2,"parallel":true,"threadCount":50,"queue":10,"asyn":false,"continueOnError":true,"asynResultPollTimeOut":1000,"useLowcase":null,"scheduleBatchSize":null,"index":null,"indexType":null,"useJavaName":null,"exportResultHandlerClass":null,"locale":null,"timeZone":null,"esIdGeneratorClass":"org.frameworkset.tran.DefaultEsIdGenerator","dataRefactorClass":"org.frameworkset.elasticsearch.imp.ES2DBScrollTimestampDemo$3","pagine":false,"scrollLiveTime":"10m","queryUrl":"dbdemo/_search","dsl2ndSqlFile":"dsl2ndSqlFile.xml","dslName":"scrollQuery","sliceQuery":false,"sliceSize":0,"targetIndex":null,"targetIndexType":null}
-		FileImportConfig config = new FileImportConfig();
+		FileInputConfig config = new FileInputConfig();
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
 //		config.addConfig(new FileConfig("D:\\ecslog",//指定目录
@@ -167,7 +171,7 @@ public class FileLog2DBWithRecordSplit2ndCustomSQLForFileDemo {
 		 * true 开启 false 关闭
 		 */
 		config.setEnableMeta(true);
-		importBuilder.setFileImportConfig(config);
+		importBuilder.setInputConfig(config);
 
 
 
@@ -177,12 +181,12 @@ public class FileLog2DBWithRecordSplit2ndCustomSQLForFileDemo {
 		importBuilder.setLastValueStorePath("filelogdbsplit1_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 		//导出到数据源配置
-		DBConfigBuilder dbConfigBuilder = new DBConfigBuilder();
-		dbConfigBuilder
+		DBOutputConfig dbOutputConfig = new DBOutputConfig();
+		dbOutputConfig
 				.setSqlFilepath("sql-dbtran.xml")//指定sql配置文件地址
-				.setTargetDbName("test");//指定目标数据库，在application.properties文件中配置
+				.setDbName("test");//指定目标数据库，在application.properties文件中配置
 
-		importBuilder.setOutputDBConfig(dbConfigBuilder.buildDBImportConfig());
+		importBuilder.setOutputConfig(dbOutputConfig);
 		importBuilder.addCallInterceptor(new CallInterceptor() {
 			@Override
 			public void preCall(TaskContext taskContext) {
@@ -192,10 +196,10 @@ public class FileLog2DBWithRecordSplit2ndCustomSQLForFileDemo {
 				 * 根据文件名称指定插入数据库的sql语句
 				 */
 				if(filePath.endsWith("metrics-report.log")) {
-					DBConfigBuilder dbConfigBuilder = new DBConfigBuilder();
-					dbConfigBuilder.setInsertSqlName("insertSql");//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
+					DBOutputConfig _dbOutputConfig = new DBOutputConfig();
+					_dbOutputConfig.setInsertSqlName("insertSql");//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
 
-					taskContext.setDbmportConfig(dbConfigBuilder.buildDBImportConfig());
+					taskContext.setDbmportConfig(_dbOutputConfig);
 				}
 			}
 

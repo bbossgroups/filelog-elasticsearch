@@ -22,12 +22,13 @@ import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.Record;
+import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
-import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.input.file.FilterFileInfo;
-import org.frameworkset.tran.output.es.FileLog2ESImportBuilder;
+import org.frameworkset.tran.plugin.es.output.ElasticsearchOutputConfig;
+import org.frameworkset.tran.plugin.file.input.FileInputConfig;
 import org.frameworkset.tran.record.SplitHandler;
 import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
@@ -82,7 +83,7 @@ public class FileLog2ESWithRecordSplitDemo {
 			logger.info(repsonse);
 		} catch (Exception e) {
 		}
-		FileLog2ESImportBuilder importBuilder = new FileLog2ESImportBuilder();
+		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
@@ -105,7 +106,7 @@ public class FileLog2ESWithRecordSplitDemo {
 			}
 		});
 		importBuilder.addFieldMapping("@message","message");
-		FileImportConfig config = new FileImportConfig();
+		FileInputConfig config = new FileInputConfig();
 		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
@@ -197,14 +198,16 @@ public class FileLog2ESWithRecordSplitDemo {
 		 * true 开启 false 关闭
 		 */
 		config.setEnableMeta(true);
-		importBuilder.setFileImportConfig(config);
+		importBuilder.setInputConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
-		importBuilder.setTargetElasticsearch("default");
+		ElasticsearchOutputConfig elasticsearchOutputConfig = new ElasticsearchOutputConfig();
+		elasticsearchOutputConfig.setTargetElasticsearch("default");
 		//指定索引名称，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
-		importBuilder.setIndex("metrics-report");
+		elasticsearchOutputConfig.setIndex("metrics-report");
 		//指定索引类型，这里采用的是elasticsearch 7以上的版本进行测试，不需要指定type
-		//importBuilder.setIndexType("idxtype");
+		//elasticsearchOutputConfig.setIndexType("idxtype");
 
+		importBuilder.setOutputConfig(elasticsearchOutputConfig);
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据

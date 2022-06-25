@@ -21,9 +21,11 @@ import org.frameworkset.tran.CommonRecord;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
+import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
-import org.frameworkset.tran.es.input.dummy.ES2DummyExportBuilder;
 import org.frameworkset.tran.ouput.custom.CustomOutPut;
+import org.frameworkset.tran.plugin.custom.output.CustomOupputConfig;
+import org.frameworkset.tran.plugin.es.input.ElasticsearchInputConfig;
 import org.frameworkset.tran.schedule.CallInterceptor;
 import org.frameworkset.tran.schedule.ImportIncreamentConfig;
 import org.frameworkset.tran.schedule.TaskContext;
@@ -48,28 +50,30 @@ public class Elasticsearch2CustomRedisBatchDemo {
 	public static void main(String[] args){
 
 
-		ES2DummyExportBuilder importBuilder = new ES2DummyExportBuilder();
+		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(10)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		/**
 		 * es相关配置
 		 */
-		importBuilder
-				.setDsl2ndSqlFile("dsl2ndSqlFile.xml")
+		ElasticsearchInputConfig elasticsearchInputConfig = new ElasticsearchInputConfig();
+		elasticsearchInputConfig
+				.setDslFile("dsl2ndSqlFile.xml")
 				.setDslName("scrollQuery")
 				.setScrollLiveTime("10m")
 //				.setSliceQuery(true)
 //				.setSliceSize(5)
-				.setQueryUrl("dbdemo/_search")
+				.setQueryUrl("dbdemo/_search");
+		importBuilder.setInputConfig(elasticsearchInputConfig);
 
 //				//添加dsl中需要用到的参数及参数值
 //				.addParam("var1","v1")
 //				.addParam("var2","v2")
 //				.addParam("var3","v3")
-				.setIncreamentEndOffset(5);
-
+		importBuilder.setIncreamentEndOffset(5);
+		CustomOupputConfig customOupputConfig = new CustomOupputConfig();
 		//自己处理数据
-		importBuilder.setCustomOutPut(new CustomOutPut() {
+		customOupputConfig.setCustomOutPut(new CustomOutPut() {
 			@Override
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
@@ -107,6 +111,7 @@ public class Elasticsearch2CustomRedisBatchDemo {
 				}
 			}
 		});
+		importBuilder.setOutputConfig(customOupputConfig);
 		//定时任务配置，
 		importBuilder.setFixedRate(false)//参考jdk timer task文档对fixedRate的说明
 //					 .setScheduleDate(date) //指定任务开始执行时间：日期

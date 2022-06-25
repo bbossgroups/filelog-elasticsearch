@@ -17,15 +17,15 @@ package org.frameworkset.elasticsearch.imp;
 
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
+import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
-import org.frameworkset.tran.db.DBConfigBuilder;
 import org.frameworkset.tran.ftp.FtpConfig;
 import org.frameworkset.tran.input.excel.ExcelFileConfig;
-import org.frameworkset.tran.input.excel.ExcelFileImportConfig;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FilterFileInfo;
-import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
+import org.frameworkset.tran.plugin.db.output.DBOutputConfig;
+import org.frameworkset.tran.plugin.file.input.ExcelFileInputConfig;
 import org.frameworkset.util.concurrent.Count;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +64,13 @@ public class FtpExcelFile2DBDemo {
  *     )
  *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
  */
-		FileLog2DBImportBuilder importBuilder = new FileLog2DBImportBuilder();
+		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
 
-		ExcelFileImportConfig config = new ExcelFileImportConfig();
+		ExcelFileInputConfig config = new ExcelFileInputConfig();
 		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
 				.setFtpUser("ecs").setFtpPassword("ecs@123")
 				.setRemoteFileDir("/home/ecs/failLog");
@@ -103,21 +103,21 @@ public class FtpExcelFile2DBDemo {
 
 
 		config.setEnableMeta(true);
-		importBuilder.setFileImportConfig(config);
+		importBuilder.setInputConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 
 //导出到数据源配置
-		DBConfigBuilder dbConfigBuilder = new DBConfigBuilder();
-		dbConfigBuilder
+		DBOutputConfig dbOutputConfig = new DBOutputConfig();
+		dbOutputConfig
 				.setSqlFilepath("sql-dbtran.xml")
 
-				.setTargetDbName("test")//指定目标数据库，在application.properties文件中配置
-//				.setTargetDbDriver("com.mysql.cj.jdbc.Driver") //数据库驱动程序，必须导入相关数据库的驱动jar包
-//				.setTargetDbUrl("jdbc:mysql://localhost:3306/bboss?useCursorFetch=true") //通过useCursorFetch=true启用mysql的游标fetch机制，否则会有严重的性能隐患，useCursorFetch必须和jdbcFetchSize参数配合使用，否则不会生效
-//				.setTargetDbUser("root")
-//				.setTargetDbPassword("123456")
-//				.setTargetValidateSQL("select 1")
-//				.setTargetUsePool(true)//是否使用连接池
+				.setDbName("test")//指定目标数据库，在application.properties文件中配置
+//				.setDbDriver("com.mysql.cj.jdbc.Driver") //数据库驱动程序，必须导入相关数据库的驱动jar包
+//				.setDbUrl("jdbc:mysql://localhost:3306/bboss?useCursorFetch=true") //通过useCursorFetch=true启用mysql的游标fetch机制，否则会有严重的性能隐患，useCursorFetch必须和jdbcFetchSize参数配合使用，否则不会生效
+//				.setDbUser("root")
+//				.setDbPassword("123456")
+//				.setValidateSQL("select 1")
+//				.setUsePool(true)//是否使用连接池
 				.setInsertSqlName("insertcityperson")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
 
 				/**
@@ -128,7 +128,7 @@ public class FtpExcelFile2DBDemo {
 				 * @return
 				 */
 				.setOptimize(false);//指定查询源库的sql语句，在配置文件中配置：sql-dbtran.xml
-		importBuilder.setOutputDBConfig(dbConfigBuilder.buildDBImportConfig());
+		importBuilder.setOutputConfig(dbOutputConfig);
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
