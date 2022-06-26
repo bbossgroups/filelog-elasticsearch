@@ -85,7 +85,7 @@ public class FileSubDirLog2ESDemo {
 		importBuilder.addFieldMapping("@message","message");
 		FileInputConfig config = new FileInputConfig();
 		config.setCharsetEncode("GB2312");
-		config.setBackupSuccessFiles(true);
+		config.setBackupSuccessFiles(false);
 		config.setBackupSuccessFileDir("D:\\backup\\subdirlogs");
 		config.setBackupSuccessFileLiveTime( 5 * 60l);//备份文件保留5分钟
 		config.addConfig(new FileConfig().setSourcePath("D:\\subdirlogs")//指定目录

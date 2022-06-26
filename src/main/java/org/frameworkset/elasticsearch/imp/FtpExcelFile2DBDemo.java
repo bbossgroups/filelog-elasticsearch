@@ -99,6 +99,7 @@ public class FtpExcelFile2DBDemo {
 							}
 						})//指定文件过滤器
 				        .setSkipHeaderLines(1)//忽略第一行
+						.setCloseEOF(true)
 		);
 
 

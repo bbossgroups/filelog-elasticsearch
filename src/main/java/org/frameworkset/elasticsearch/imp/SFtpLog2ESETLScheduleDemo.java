@@ -194,7 +194,9 @@ public class SFtpLog2ESETLScheduleDemo {
 										})
 										.setSourcePath("D:/ftplogs")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
+										.setCloseEOF(true)
 						);
+
 
 		config.setEnableMeta(true);
 //		config.setJsondata(true);

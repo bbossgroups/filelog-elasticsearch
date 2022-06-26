@@ -148,7 +148,7 @@ public class FTPFileLog2CustomRedisBatchDemo {
 		 * 备份文件保留时长，单位：秒
 		 * 默认保留7天
 		 */
-		config.setBackupSuccessFileLiveTime( 10 * 60l);
+		config.setBackupSuccessFileLiveTime( 7 * 24 * 60 * 60l);
 		/**
 		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@filemeta字段值添加到记录中，文件插件支持的元信息字段如下：
 		 * hostIp：主机ip
@@ -212,14 +212,12 @@ public class FTPFileLog2CustomRedisBatchDemo {
 						clusterPipeline.hset("xingchenma1", cert_no, valuedata);
 //						clusterPipeline1.hset("xingchenma2", cert_no, valuedata);
 					}
-					clusterPipeline.sync();
+//					clusterPipeline.sync();
 
 //					clusterPipeline1.sync();//可以写多个redis集群
 				}
 				finally {
-					if(clusterPipeline != null){
-						clusterPipeline.close();
-					}
+					RedisTool.closePipeline(clusterPipeline );
 
 //					if(clusterPipeline1 != null){//可以写多个redis集群
 //						clusterPipeline1.close();

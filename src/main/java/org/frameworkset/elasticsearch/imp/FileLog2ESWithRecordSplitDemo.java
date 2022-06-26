@@ -151,7 +151,8 @@ public class FileLog2ESWithRecordSplitDemo {
 											@Override
 											public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
 												//判断是否采集文件数据，返回true标识采集，false 不采集
-												return fileInfo.equals("metrics-report.log");
+												boolean r = fileInfo.getFileName().equals("metrics-report.log");
+												return r;
 											}
 										})//指定文件过滤器
 										.setCloseEOF(false)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
@@ -209,9 +210,9 @@ public class FileLog2ESWithRecordSplitDemo {
 
 		importBuilder.setOutputConfig(elasticsearchOutputConfig);
 		//增量配置开始
-		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("filelogeslimit_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("filelogessplit_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 		//映射和转换配置开始

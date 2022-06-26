@@ -86,16 +86,7 @@ public class FTPFileLog2CustomRedisDemo {
 					 * 	RemoteFileValidate.FILE_VALIDATE_FAILED_DELETE = 5;
 					 */
 					public Result validateFile(ValidateContext validateContext)  {
-						if(validateContext.isRedownload())
-							return Result.default_ok;
-//						return Result.default_ok;
-						Result result = new Result();
-						result.setValidateResult(RemoteFileValidate.FILE_VALIDATE_FAILED_REDOWNLOAD);
-						result.setRedownloadCounts(3);
-						result.setMessage("MD5校验"+validateContext.getRemoteFile()+"失败，重试3次");
-						//根据remoteFile的信息计算md5文件路径地址，并下载，下载务必后进行签名校验
-						//remoteFileAction.downloadFile("remoteFile.md5","dataFile.md5");
-						return result;
+						return Result.default_ok;
 					}
 				});
 		//
@@ -147,7 +138,7 @@ public class FTPFileLog2CustomRedisDemo {
 		 * 备份文件保留时长，单位：秒
 		 * 默认保留7天
 		 */
-		config.setBackupSuccessFileLiveTime( 10 * 60l);
+		config.setBackupSuccessFileLiveTime( 7 * 24 * 60 * 60l);
 		/**
 		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@filemeta字段值添加到记录中，文件插件支持的元信息字段如下：
 		 * hostIp：主机ip
@@ -273,12 +264,13 @@ public class FTPFileLog2CustomRedisDemo {
 		importBuilder.addCallInterceptor(new CallInterceptor() {
 			@Override
 			public void preCall(TaskContext taskContext) {
-
+				logger.info("preCall");
 			}
 
 			@Override
 			public void afterCall(TaskContext taskContext) {
 				if(taskContext != null) {
+					taskContext.await();
 					FileTaskContext fileTaskContext = (FileTaskContext)taskContext;
 					logger.info("文件{}导入情况:{}",fileTaskContext.getFileInfo().getOriginFilePath(),taskContext.getJobTaskMetrics().toString());
 				}
