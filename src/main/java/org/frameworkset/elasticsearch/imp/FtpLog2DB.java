@@ -20,15 +20,15 @@ import org.frameworkset.spi.assemble.PropertiesContainer;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
+import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
-import org.frameworkset.tran.db.DBConfigBuilder;
 import org.frameworkset.tran.ftp.FtpConfig;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
-import org.frameworkset.tran.input.file.FileImportConfig;
 import org.frameworkset.tran.input.file.FilterFileInfo;
 import org.frameworkset.tran.metrics.TaskMetrics;
-import org.frameworkset.tran.output.db.FileLog2DBImportBuilder;
+import org.frameworkset.tran.plugin.db.output.DBOutputConfig;
+import org.frameworkset.tran.plugin.file.input.FileInputConfig;
 import org.frameworkset.tran.schedule.CallInterceptor;
 import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
@@ -86,12 +86,12 @@ public class FtpLog2DB {
         //String data_dir = propertiesContainer.getSystemEnvProperty("DATA_DIR", "D:\\www\\input_data\\logs\\");  //数据获取目录
 
 
-        FileLog2DBImportBuilder importBuilder = new FileLog2DBImportBuilder();
+        ImportBuilder importBuilder = new ImportBuilder();
         importBuilder.setBatchSize(500)//设置批量入库的记录数
                 .setFetchSize(1000);//设置按批读取文件行数
         //设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
         importBuilder.setFlushInterval(10000l);
-        FileImportConfig config = new FileImportConfig();
+        FileInputConfig config = new FileInputConfig();
 
         config.setJsondata(true);//标识文本记录是json格式的数据，true 将值解析为json对象，false - 不解析，这样值将作为一个完整的message字段存放到上报数据中
         config.setRootLevel(true);//jsondata = true时，自定义的数据是否和采集的数据平级，true则直接在原先的json串中存放数据 false则定义一个json存放数据，若不是json则是message
@@ -164,12 +164,12 @@ public class FtpLog2DB {
 
 
         config.setEnableMeta(true);
-        importBuilder.setFileImportConfig(config);
+        importBuilder.setInputConfig(config);
         //指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 
         //导出到数据源配置
-        DBConfigBuilder dbConfigBuilder = new DBConfigBuilder();
-        dbConfigBuilder
+        DBOutputConfig dbOutputConfig = new DBOutputConfig();
+        dbOutputConfig
                 .setSqlFilepath("sql-dbtran.xml")
                 //.setDeleteSql("deleteSql")
                 .setInsertSqlName("insertFTP_LOG")//指定新增的sql语句名称，在配置文件中配置：sql-dbtran.xml
@@ -201,16 +201,16 @@ public class FtpLog2DB {
         String dbJdbcFetchSize = propertiesContainer.getSystemEnvProperty("db.jdbcFetchSize", "10000");
         boolean columnLableUpperCase = propertiesContainer.getBooleanProperty("db.columnLableUpperCase", true);
 
-        dbConfigBuilder.setTargetDbName(dbName)//指定目标数据库，在application.properties文件中配置
-                .setTargetDbDriver(dbDriver) //数据库驱动程序，必须导入相关数据库的驱动jar包
-                .setTargetDbUrl(dbUrl) //通过useCursorFetch=true启用mysql的游标fetch机制，否则会有严重的性能隐患，useCursorFetch必须和jdbcFetchSize参数配合使用，否则不会生效
-                .setTargetDbUser(dbUser)
-                .setTargetDbPassword(dbPassword)
-                .setTargetValidateSQL(validateSQL)
-                .setTargetUsePool(dbUsePool)//是否使用连接池
+        dbOutputConfig.setDbName(dbName)//指定目标数据库，在application.properties文件中配置
+                .setDbDriver(dbDriver) //数据库驱动程序，必须导入相关数据库的驱动jar包
+                .setDbUrl(dbUrl) //通过useCursorFetch=true启用mysql的游标fetch机制，否则会有严重的性能隐患，useCursorFetch必须和jdbcFetchSize参数配合使用，否则不会生效
+                .setDbUser(dbUser)
+                .setDbPassword(dbPassword)
+                .setValidateSQL(validateSQL)
+                .setUsePool(dbUsePool)//是否使用连接池
         ;
 
-        importBuilder.setOutputDBConfig(dbConfigBuilder.buildDBImportConfig());
+        importBuilder.setOutputConfig(dbOutputConfig);
         //增量配置开始
         importBuilder.setFromFirst(false);
         //setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，

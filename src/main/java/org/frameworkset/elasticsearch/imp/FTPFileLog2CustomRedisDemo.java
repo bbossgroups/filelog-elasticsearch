@@ -21,18 +21,19 @@ import org.frameworkset.nosql.redis.RedisHelper;
 import org.frameworkset.tran.CommonRecord;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
+import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.ftp.FtpConfig;
 import org.frameworkset.tran.ftp.RemoteFileValidate;
 import org.frameworkset.tran.ftp.ValidateContext;
 import org.frameworkset.tran.input.excel.ExcelFileConfig;
-import org.frameworkset.tran.input.excel.ExcelFileImportConfig;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileTaskContext;
 import org.frameworkset.tran.input.file.FilterFileInfo;
 import org.frameworkset.tran.ouput.custom.CustomOutPut;
-import org.frameworkset.tran.output.dummy.FileLog2DummyExportBuilder;
+import org.frameworkset.tran.plugin.custom.output.CustomOupputConfig;
+import org.frameworkset.tran.plugin.file.input.ExcelFileInputConfig;
 import org.frameworkset.tran.schedule.CallInterceptor;
 import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
@@ -55,12 +56,12 @@ public class FTPFileLog2CustomRedisDemo {
 	public static void main(String[] args){
 
 
-		FileLog2DummyExportBuilder importBuilder = new FileLog2DummyExportBuilder();
+		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(10)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
-		ExcelFileImportConfig config = new ExcelFileImportConfig();
+		ExcelFileInputConfig config = new ExcelFileInputConfig();
 
 		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
 				.setFtpUser("ecs").setFtpPassword("ecs@123").setDownloadWorkThreads(4)
@@ -85,16 +86,7 @@ public class FTPFileLog2CustomRedisDemo {
 					 * 	RemoteFileValidate.FILE_VALIDATE_FAILED_DELETE = 5;
 					 */
 					public Result validateFile(ValidateContext validateContext)  {
-						if(validateContext.isRedownload())
-							return Result.default_ok;
-//						return Result.default_ok;
-						Result result = new Result();
-						result.setValidateResult(RemoteFileValidate.FILE_VALIDATE_FAILED_REDOWNLOAD);
-						result.setRedownloadCounts(3);
-						result.setMessage("MD5校验"+validateContext.getRemoteFile()+"失败，重试3次");
-						//根据remoteFile的信息计算md5文件路径地址，并下载，下载务必后进行签名校验
-						//remoteFileAction.downloadFile("remoteFile.md5","dataFile.md5");
-						return result;
+						return Result.default_ok;
 					}
 				});
 		//
@@ -146,7 +138,7 @@ public class FTPFileLog2CustomRedisDemo {
 		 * 备份文件保留时长，单位：秒
 		 * 默认保留7天
 		 */
-		config.setBackupSuccessFileLiveTime( 10 * 60l);
+		config.setBackupSuccessFileLiveTime( 7 * 24 * 60 * 60l);
 		/**
 		 * 启用元数据信息到记录中，元数据信息以map结构方式作为@filemeta字段值添加到记录中，文件插件支持的元信息字段如下：
 		 * hostIp：主机ip
@@ -183,10 +175,12 @@ public class FTPFileLog2CustomRedisDemo {
 		 * true 开启 false 关闭
 		 */
 		config.setEnableMeta(true);
-		importBuilder.setFileImportConfig(config);
+		importBuilder.setInputConfig(config);
 
 		//自己处理数据
-		importBuilder.setCustomOutPut(new CustomOutPut() {
+
+		CustomOupputConfig customOupputConfig = new CustomOupputConfig();
+		customOupputConfig.setCustomOutPut(new CustomOutPut() {
 			@Override
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
@@ -217,6 +211,7 @@ public class FTPFileLog2CustomRedisDemo {
 
 			}
 		});
+		importBuilder.setOutputConfig(customOupputConfig);
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
@@ -269,12 +264,13 @@ public class FTPFileLog2CustomRedisDemo {
 		importBuilder.addCallInterceptor(new CallInterceptor() {
 			@Override
 			public void preCall(TaskContext taskContext) {
-
+				logger.info("preCall");
 			}
 
 			@Override
 			public void afterCall(TaskContext taskContext) {
 				if(taskContext != null) {
+					taskContext.await();
 					FileTaskContext fileTaskContext = (FileTaskContext)taskContext;
 					logger.info("文件{}导入情况:{}",fileTaskContext.getFileInfo().getOriginFilePath(),taskContext.getJobTaskMetrics().toString());
 				}
