@@ -4,7 +4,7 @@
         <property name="servers">
             ${redis.servers}
         </property>
-        <!-- single|cluster|shared
+        <!-- single|cluster
         connectionTimeout 单位：毫秒
         socketTimeout 单位：毫秒
         -->
@@ -20,7 +20,7 @@
         <property name="servers">
             ${redis1.servers}
         </property>
-        <!-- single|cluster|shared
+        <!-- single|cluster
         connectionTimeout 单位：毫秒
         socketTimeout 单位：毫秒
         -->
