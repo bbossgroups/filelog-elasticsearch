@@ -16,7 +16,8 @@ package org.frameworkset.elasticsearch.imp;
  */
 
 import com.frameworkset.util.SimpleStringUtil;
-import org.frameworkset.nosql.redis.RedisTool;
+import org.frameworkset.nosql.redis.RedisFactory;
+import org.frameworkset.nosql.redis.RedisHelper;
 import org.frameworkset.tran.CommonRecord;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
@@ -198,9 +199,11 @@ public class FTPFileLog2CustomRedisBatchDemo {
 
 				ClusterPipeline clusterPipeline = null;
 //				ClusterPipeline clusterPipeline1 = null;//可以写多个redis集群
+				RedisHelper redisHelper = null;
 				//批量处理
 				try {
-					clusterPipeline = RedisTool.getInstance().getClusterPipelined();
+					redisHelper = RedisFactory.getRedisHelper();
+					clusterPipeline = redisHelper.getClusterPipelined();
 //					clusterPipeline1 = RedisTool.getInstance("redis1").getClusterPipelined();//可以写多个redis集群
 
 					for (CommonRecord record : datas) {
@@ -212,12 +215,11 @@ public class FTPFileLog2CustomRedisBatchDemo {
 						clusterPipeline.hset("xingchenma1", cert_no, valuedata);
 //						clusterPipeline1.hset("xingchenma2", cert_no, valuedata);
 					}
-//					clusterPipeline.sync();
 
-//					clusterPipeline1.sync();//可以写多个redis集群
 				}
 				finally {
-					RedisTool.closePipeline(clusterPipeline );
+					if(redisHelper != null)
+						redisHelper.release();
 
 //					if(clusterPipeline1 != null){//可以写多个redis集群
 //						clusterPipeline1.close();

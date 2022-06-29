@@ -1,0 +1,34 @@
+<properties>
+    <config file="application.properties"/>
+    <property name="default" class="org.frameworkset.nosql.redis.RedisDB">
+        <property name="servers">
+            ${redis.servers}
+        </property>
+        <!-- single|cluster
+        connectionTimeout 单位：毫秒
+        socketTimeout 单位：毫秒
+        -->
+        <property name="mode" value="single" />
+        <property name="auth" value="${redis.auth:}" />
+        <property name="connectionTimeout" value="${redis.connectionTimeout:10000}" />
+        <property name="socketTimeout" value="${redis.socketTimeout:10000}" />
+        <property name="poolMaxTotal" value="${redis.poolMaxTotal:10}"/>
+        <property name="poolMaxWaitMillis" value="${redis.poolMaxWaitMillis:2000}"/>
+    </property>
+
+    <property name="redis1" class="org.frameworkset.nosql.redis.RedisDB">
+        <property name="servers">
+            ${redis1.servers}
+        </property>
+        <!-- single|cluster
+        connectionTimeout 单位：毫秒
+        socketTimeout 单位：毫秒
+        -->
+        <property name="mode" value="single" />
+        <property name="auth" value="${redis1.auth:}" />
+        <property name="connectionTimeout" value="${redis1.connectionTimeout:10000}" />
+        <property name="socketTimeout" value="${redis1.socketTimeout:10000}" />
+        <property name="poolMaxTotal" value="${redis1.poolMaxTotal:10}"/>
+        <property name="poolMaxWaitMillis" value="${redis1.poolMaxWaitMillis:2000}"/>
+    </property>
+</properties>

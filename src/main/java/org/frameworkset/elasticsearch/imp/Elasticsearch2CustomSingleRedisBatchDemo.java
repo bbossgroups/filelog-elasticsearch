@@ -33,7 +33,7 @@ import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.task.TaskCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.ClusterPipeline;
+import redis.clients.jedis.Pipeline;
 
 import java.util.List;
 import java.util.Map;
@@ -46,8 +46,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class Elasticsearch2CustomRedisBatchDemo {
-	private static Logger logger = LoggerFactory.getLogger(Elasticsearch2CustomRedisBatchDemo.class);
+public class Elasticsearch2CustomSingleRedisBatchDemo {
+	private static Logger logger = LoggerFactory.getLogger(Elasticsearch2CustomSingleRedisBatchDemo.class);
 	public static void main(String[] args){
 
 
@@ -81,12 +81,12 @@ public class Elasticsearch2CustomRedisBatchDemo {
 				//You can do any thing here for datas
 
 				RedisHelper redisHelper = null;
-				ClusterPipeline clusterPipeline = null;
+				Pipeline clusterPipeline = null;
 //				ClusterPipeline clusterPipeline1 = null;//可以写多个redis集群
 				//批量处理
 				try {
 					redisHelper = RedisFactory.getRedisHelper();
-					clusterPipeline = redisHelper.getClusterPipelined();
+					clusterPipeline = redisHelper.pipelined();
 
 					for (CommonRecord record : datas) {
 						Map<String, Object> data = record.getDatas();
@@ -119,7 +119,7 @@ public class Elasticsearch2CustomRedisBatchDemo {
 		//增量配置开始
 		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("esbatchredis_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("esbatchsingleredis_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		importBuilder.setLastValueColumn("collecttime");
 		importBuilder.setLastValueType(ImportIncreamentConfig.TIMESTAMP_TYPE);
 		//增量配置结束
