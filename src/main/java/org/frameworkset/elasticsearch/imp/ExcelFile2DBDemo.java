@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 public class ExcelFile2DBDemo {
 	private static Logger logger = LoggerFactory.getLogger(ExcelFile2DBDemo.class);
 	public static void main(String[] args){
+//		Date[] times = getFileDates(new File("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles\\backup\\works.xlsx") );
 
 /**
  * 案例对应的表结构
@@ -73,12 +74,15 @@ public class ExcelFile2DBDemo {
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
-
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
+		config.setBackupSuccessFiles(true);
+		config.setBackupSuccessFileDir("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles\\backup");
+//		config.setBackupSuccessFileLiveTime(0);
 
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
 		//配置excel文件列与导出字段名称映射关系
-		config.addConfig(new ExcelFileConfig()
+		FileConfig excelFileConfig = new ExcelFileConfig();
+		config.addConfig(excelFileConfig
 						.addCellMapping(0,"shebao_org")
 						.addCellMapping(1,"person_no")
 						.addCellMapping(2,"name")
@@ -131,7 +135,7 @@ public class ExcelFile2DBDemo {
 				.setOptimize(false);//指定查询源库的sql语句，在配置文件中配置：sql-dbtran.xml
 		importBuilder.setOutputConfig(dbOutputConfig);
 		//增量配置开始
-		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
+		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
 		importBuilder.setLastValueStorePath("excelfilemysql_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
@@ -162,8 +166,8 @@ public class ExcelFile2DBDemo {
 
 			@Override
 			public void afterCall(TaskContext taskContext) {
-				if(taskContext != null)
-					logger.info(taskContext.getJobTaskMetrics().toString());
+//				if(taskContext != null)
+//					logger.info(taskContext.getJobTaskMetrics().toString());
 			}
 
 			@Override
@@ -212,7 +216,7 @@ public class ExcelFile2DBDemo {
 			public void exception(TaskCommand<String, String> taskCommand, Exception exception) {
 				//TaskMetrics taskMetrics = taskCommand.getTaskMetrics();
 				//logger.info(taskMetrics.toString());
-				logger.warn("处理异常error:", exception);
+//				logger.warn("处理异常error:", exception);
 
 			}
 
@@ -228,7 +232,7 @@ public class ExcelFile2DBDemo {
 		importBuilder.setParallel(true);//设置为多线程并行批量导入,false串行
 		importBuilder.setQueue(10);//设置批量导入线程池等待队列长度
 		importBuilder.setThreadCount(6);//设置批量导入线程池工作线程数量
-		importBuilder.setContinueOnError(true);//任务出现异常，是否继续执行作业：true（默认值）继续执行 false 中断作业执行
+		importBuilder.setContinueOnError(false);//任务出现异常，是否继续执行作业：true（默认值）继续执行 false 中断作业执行
 		importBuilder.setAsyn(false);//true 异步方式执行，不等待所有导入作业任务结束，方法快速返回；false（默认值） 同步方式执行，等待所有导入作业任务结束，所有作业结束后方法才返回
 		importBuilder.setPrintTaskLog(true);
 
