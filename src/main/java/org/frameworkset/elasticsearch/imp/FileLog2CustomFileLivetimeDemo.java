@@ -76,7 +76,7 @@ public class FileLog2CustomFileLivetimeDemo {
 				.setEnableInode(false).setCloseOlderTime(60*1000L)
 				.setExcludeLines(new String[]{".*endpoint.*"}));//采集不包含endpoint的日志
 		config.setCleanCompleteFiles(true);
-		config.setFileLiveTime(60 * 1000L);
+		config.setFileLiveTime(120 * 1000L);
 
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**
