@@ -76,31 +76,30 @@ public class FtpExcelFile2DBDemo {
 				.setRemoteFileDir("/home/ecs/failLog");
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
 		//配置excel文件列与导出字段名称映射关系
-		config.addConfig(new ExcelFileConfig()
-						.addCellMapping(0,"shebao_org")
-						.addCellMapping(1,"person_no")
-						.addCellMapping(2,"name")
-						.addCellMapping(3,"cert_type")
+		FileConfig excelFileConfig = new ExcelFileConfig().setFtpConfig(ftpConfig)
+				.setSourcePath("D:\\excelfiles/ftp")//指定目录
+				.setFileFilter(new FileFilter() {
+					@Override
+					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
+						//判断是否采集文件数据，返回true标识采集，false 不采集
+						return fileInfo.getFileName().endsWith(".xlsx");
+					}
+				})//指定文件过滤器
+				.setSkipHeaderLines(1)//忽略第一行
+				.setCloseEOF(true);
+		excelFileConfig.addCellMapping(0,"shebao_org")
+				.addCellMapping(1,"person_no")
+				.addCellMapping(2,"name")
+				.addCellMapping(3,"cert_type")
 
-						.addCellMapping(4,"cert_no","")
-						.addCellMapping(5,"zhs_item")
+				.addCellMapping(4,"cert_no","")
+				.addCellMapping(5,"zhs_item")
 
-						.addCellMapping(6,"zhs_class")
-						.addCellMapping(7,"zhs_sub_class")
-						.addCellMapping(8,"zhs_year","2022")
-						.addCellMapping(9,"zhs_level","1")
-						.setFtpConfig(ftpConfig)
-						.setSourcePath("D:\\excelfiles/ftp")//指定目录
-						.setFileFilter(new FileFilter() {
-							@Override
-							public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
-								//判断是否采集文件数据，返回true标识采集，false 不采集
-								return fileInfo.getFileName().endsWith(".xlsx");
-							}
-						})//指定文件过滤器
-				        .setSkipHeaderLines(1)//忽略第一行
-						.setCloseEOF(true)
-		);
+				.addCellMapping(6,"zhs_class")
+				.addCellMapping(7,"zhs_sub_class")
+				.addCellMapping(8,"zhs_year","2022")
+				.addCellMapping(9,"zhs_level","1");
+		config.addConfig(excelFileConfig);
 
 
 		config.setEnableMeta(true);

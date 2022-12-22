@@ -13,3 +13,10 @@ es.log
 *.bak
 csvfiles/cityperson.csv
 csvfiles/newmanrequests.csv
+/excelfiles/cityperson.xlsx
+/excelfiles/works-0329.txt
+/excelfiles/works0329.xlsx
+/excelfiles/works.xlsx
+/excelfiles/newmanrequests.xlsx
+/excelfiles/auto.txt
+/excelfiles/backup/cityperson.xlsx

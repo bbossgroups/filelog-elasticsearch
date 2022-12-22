@@ -327,7 +327,7 @@ public class FtpLog2ESDemo {
 			}
 
 			@Override
-			public void exception(TaskCommand<String,String> taskCommand, Exception exception) {
+			public void exception(TaskCommand<String,String> taskCommand, Throwable exception) {
 				logger.warn("error:",exception);
 			}
 

@@ -220,7 +220,7 @@ public class FtpAvl2ESDemo {
 			}
 
 			@Override
-			public void exception(TaskCommand<String,String> taskCommand, Exception exception) {
+			public void exception(TaskCommand<String,String> taskCommand, Throwable exception) {
 				logger.warn("error:",exception);
 			}
 
@@ -246,7 +246,7 @@ public class FtpAvl2ESDemo {
 			}
 
 			@Override
-			public void throwException(TaskContext taskContext, Exception e) {
+			public void throwException(TaskContext taskContext, Throwable e) {
 				if(taskContext != null) {
 					taskContext.await();//等待数据异步处理完成
 					FileTaskContext fileTaskContext = (FileTaskContext)taskContext;

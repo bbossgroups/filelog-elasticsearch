@@ -209,7 +209,7 @@ public class FileLog2DBWithRecordSplit2ndCustomSQLForFileDemo {
 			}
 
 			@Override
-			public void throwException(TaskContext taskContext, Exception e) {
+			public void throwException(TaskContext taskContext, Throwable e) {
 
 			}
 		});

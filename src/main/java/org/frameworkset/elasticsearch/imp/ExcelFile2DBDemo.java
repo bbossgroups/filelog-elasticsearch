@@ -82,29 +82,29 @@ public class ExcelFile2DBDemo {
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
 		//配置excel文件列与导出字段名称映射关系
 		FileConfig excelFileConfig = new ExcelFileConfig();
-		config.addConfig(excelFileConfig
-						.addCellMapping(0,"shebao_org")
-						.addCellMapping(1,"person_no")
-						.addCellMapping(2,"name")
-						.addCellMapping(3,"cert_type")
+		excelFileConfig
+				.addCellMapping(0,"shebao_org")
+				.addCellMapping(1,"person_no")
+				.addCellMapping(2,"name")
+				.addCellMapping(3,"cert_type")
 
-						.addCellMapping(4,"cert_no","")
-						.addCellMapping(5,"zhs_item")
+				.addCellMapping(4,"cert_no","")
+				.addCellMapping(5,"zhs_item")
 
-						.addCellMapping(6,"zhs_class")
-						.addCellMapping(7,"zhs_sub_class")
-						.addCellMapping(8,"zhs_year","2022")
-						.addCellMapping(9,"zhs_level","1")
-						.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles")//指定目录
-						.setFileFilter(new FileFilter() {
-							@Override
-							public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
-								//判断是否采集文件数据，返回true标识采集，false 不采集
-								return fileInfo.getFileName().equals("cityperson.xlsx");
-							}
-						})//指定文件过滤器
-				        .setSkipHeaderLines(1)//忽略第一行
-		);
+				.addCellMapping(6,"zhs_class")
+				.addCellMapping(7,"zhs_sub_class")
+				.addCellMapping(8,"zhs_year","2022")
+				.addCellMapping(9,"zhs_level","1");
+		excelFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles")//指定目录
+				.setFileFilter(new FileFilter() {
+					@Override
+					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
+						//判断是否采集文件数据，返回true标识采集，false 不采集
+						return fileInfo.getFileName().equals("cityperson.xlsx");
+					}
+				})//指定文件过滤器
+				.setSkipHeaderLines(1);//忽略第一行
+		config.addConfig(excelFileConfig);
 
 
 		config.setEnableMeta(true);
@@ -171,7 +171,7 @@ public class ExcelFile2DBDemo {
 			}
 
 			@Override
-			public void throwException(TaskContext taskContext, Exception e) {
+			public void throwException(TaskContext taskContext, Throwable e) {
 
 			}
 		});
@@ -213,7 +213,7 @@ public class ExcelFile2DBDemo {
 			}
 
 			@Override
-			public void exception(TaskCommand<String, String> taskCommand, Exception exception) {
+			public void exception(TaskCommand<String, String> taskCommand, Throwable exception) {
 				//TaskMetrics taskMetrics = taskCommand.getTaskMetrics();
 				//logger.info(taskMetrics.toString());
 //				logger.warn("处理异常error:", exception);

@@ -130,7 +130,7 @@ public class CSVFileNewManRequest2DBDemo {
 			}
 
 			@Override
-			public void throwException(TaskContext taskContext, Exception e) {
+			public void throwException(TaskContext taskContext, Throwable e) {
 
 			}
 		});

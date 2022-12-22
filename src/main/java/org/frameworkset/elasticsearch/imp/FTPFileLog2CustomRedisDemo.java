@@ -90,7 +90,8 @@ public class FTPFileLog2CustomRedisDemo {
 					}
 				});
 		//
-		config.addConfig(new ExcelFileConfig()
+		FileConfig excelFileConfig = new ExcelFileConfig();
+		excelFileConfig
 				.addCellMapping(0,"shebao_org")
 				.addCellMapping(1,"person_no")
 				.addCellMapping(2,"name")
@@ -102,8 +103,8 @@ public class FTPFileLog2CustomRedisDemo {
 				.addCellMapping(6,"zhs_class")
 				.addCellMapping(7,"zhs_sub_class")
 				.addCellMapping(8,"zhs_year","2022")
-				.addCellMapping(9,"zhs_level","1")
-				.setFtpConfig(ftpConfig)
+				.addCellMapping(9,"zhs_level","1");
+		excelFileConfig.setFtpConfig(ftpConfig)
 				.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, //Ftp文件名称
@@ -117,7 +118,8 @@ public class FTPFileLog2CustomRedisDemo {
 					}
 				})
 				.setSkipHeaderLines(2)
-				.setSourcePath("D:/ftplogs"))//指定目录
+				.setSourcePath("D:/ftplogs");
+		config.addConfig(excelFileConfig)//指定目录
 				;
 		/**
 		 * 备份采集完成文件
@@ -277,7 +279,7 @@ public class FTPFileLog2CustomRedisDemo {
 			}
 
 			@Override
-			public void throwException(TaskContext taskContext, Exception e) {
+			public void throwException(TaskContext taskContext, Throwable e) {
 				if(taskContext != null) {
 					taskContext.await();//等待数据异步处理完成
 					FileTaskContext fileTaskContext = (FileTaskContext)taskContext;

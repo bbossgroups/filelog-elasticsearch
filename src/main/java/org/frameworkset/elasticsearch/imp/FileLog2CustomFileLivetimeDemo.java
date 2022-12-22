@@ -21,6 +21,8 @@ import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
+import org.frameworkset.tran.context.InitJobContextCall;
+import org.frameworkset.tran.context.JobContext;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.plugin.custom.output.CustomOupputConfig;
 import org.frameworkset.tran.plugin.custom.output.CustomOutPut;
@@ -162,6 +164,7 @@ public class FileLog2CustomFileLivetimeDemo {
 		 */
 		importBuilder.setDataRefactor(new DataRefactor() {
 			public void refactor(Context context) throws Exception  {
+				String test = (String)context.getJobContext().getJobData("test");
 				//可以根据条件定义是否丢弃当前记录
 				//context.setDrop(true);return;
 //				if(s.incrementAndGet() % 2 == 0) {
@@ -227,7 +230,15 @@ public class FileLog2CustomFileLivetimeDemo {
 		importBuilder.setContinueOnError(true);//任务出现异常，是否继续执行作业：true（默认值）继续执行 false 中断作业执行
 		importBuilder.setAsyn(false);//true 异步方式执行，不等待所有导入作业任务结束，方法快速返回；false（默认值） 同步方式执行，等待所有导入作业任务结束，所有作业结束后方法才返回
 		importBuilder.setPrintTaskLog(true);
-
+/**
+ * 执行数据库表数据导入es操作
+ */
+		importBuilder.setInitJobContextCall(new InitJobContextCall() {
+			@Override
+			public void initJobContext(JobContext jobContext) {
+				jobContext.addJobData("test","1111");
+			}
+		});
 		/**
 		 * 启动es数据导入文件并上传sftp/ftp作业
 		 */

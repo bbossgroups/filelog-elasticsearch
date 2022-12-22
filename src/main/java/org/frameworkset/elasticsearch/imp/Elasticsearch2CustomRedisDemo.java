@@ -149,7 +149,7 @@ public class Elasticsearch2CustomRedisDemo {
 			}
 
 			@Override
-			public void exception(TaskCommand<String,String> taskCommand, Exception exception) {
+			public void exception(TaskCommand<String,String> taskCommand, Throwable exception) {
 				logger.info("数据导入情况:{}",taskCommand.getTaskMetrics().toString(),exception);
 			}
 
@@ -173,7 +173,7 @@ public class Elasticsearch2CustomRedisDemo {
 			}
 
 			@Override
-			public void throwException(TaskContext taskContext, Exception e) {
+			public void throwException(TaskContext taskContext, Throwable e) {
 				if(taskContext != null) {
 					taskContext.await();//等待数据异步处理完成
 					logger.info("数据导入情况:{}",taskContext.getJobTaskMetrics().toString());
