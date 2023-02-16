@@ -24,7 +24,7 @@ import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.context.InitJobContextCall;
 import org.frameworkset.tran.context.JobContext;
 import org.frameworkset.tran.input.file.FileConfig;
-import org.frameworkset.tran.plugin.custom.output.CustomOupputConfig;
+import org.frameworkset.tran.plugin.custom.output.CustomOutputConfig;
 import org.frameworkset.tran.plugin.custom.output.CustomOutPut;
 import org.frameworkset.tran.plugin.file.input.FileInputConfig;
 import org.frameworkset.tran.schedule.TaskContext;
@@ -130,8 +130,8 @@ public class FileLog2CustomFileLivetimeDemo {
 
 //		importBuilder.setDummyOupputConfig(dummyOupputConfig);
 		//自己处理数据
-		CustomOupputConfig customOupputConfig = new CustomOupputConfig();
-		customOupputConfig.setCustomOutPut(new CustomOutPut() {
+		CustomOutputConfig customOutputConfig = new CustomOutputConfig();
+		customOutputConfig.setCustomOutPut(new CustomOutPut() {
 			@Override
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
@@ -142,7 +142,7 @@ public class FileLog2CustomFileLivetimeDemo {
 				}
 			}
 		});
-		importBuilder.setOutputConfig(customOupputConfig);
+		importBuilder.setOutputConfig(customOutputConfig);
 		//增量配置开始
 		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据

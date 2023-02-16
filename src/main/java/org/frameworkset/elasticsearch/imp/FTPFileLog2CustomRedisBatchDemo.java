@@ -31,7 +31,7 @@ import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileTaskContext;
 import org.frameworkset.tran.input.file.FilterFileInfo;
-import org.frameworkset.tran.plugin.custom.output.CustomOupputConfig;
+import org.frameworkset.tran.plugin.custom.output.CustomOutputConfig;
 import org.frameworkset.tran.plugin.custom.output.CustomOutPut;
 import org.frameworkset.tran.plugin.file.input.ExcelFileInputConfig;
 import org.frameworkset.tran.schedule.CallInterceptor;
@@ -191,8 +191,8 @@ public class FTPFileLog2CustomRedisBatchDemo {
 		importBuilder.setInputConfig(config);
 
 		//自己处理数据
-		CustomOupputConfig customOupputConfig = new CustomOupputConfig();
-		customOupputConfig.setCustomOutPut(new CustomOutPut() {
+		CustomOutputConfig customOutputConfig = new CustomOutputConfig();
+		customOutputConfig.setCustomOutPut(new CustomOutPut() {
 			@Override
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
@@ -229,7 +229,7 @@ public class FTPFileLog2CustomRedisBatchDemo {
 				}
 			}
 		});
-		importBuilder.setOutputConfig(customOupputConfig);
+		importBuilder.setOutputConfig(customOutputConfig);
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据

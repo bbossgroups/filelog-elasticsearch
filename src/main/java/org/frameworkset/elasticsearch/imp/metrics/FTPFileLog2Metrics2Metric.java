@@ -1,4 +1,4 @@
-package org.frameworkset.elasticsearch.imp;
+package org.frameworkset.elasticsearch.imp.metrics;
 /**
  * Copyright 2020 bboss
  * <p>
@@ -15,9 +15,7 @@ package org.frameworkset.elasticsearch.imp;
  * limitations under the License.
  */
 
-import com.frameworkset.util.SimpleStringUtil;
-import org.frameworkset.nosql.redis.RedisFactory;
-import org.frameworkset.nosql.redis.RedisHelper;
+import org.frameworkset.elasticsearch.bulk.*;
 import org.frameworkset.tran.CommonRecord;
 import org.frameworkset.tran.DataRefactor;
 import org.frameworkset.tran.DataStream;
@@ -31,28 +29,36 @@ import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.input.file.FileFilter;
 import org.frameworkset.tran.input.file.FileTaskContext;
 import org.frameworkset.tran.input.file.FilterFileInfo;
-import org.frameworkset.tran.plugin.custom.output.CustomOutputConfig;
-import org.frameworkset.tran.plugin.custom.output.CustomOutPut;
+import org.frameworkset.tran.metrics.entity.KeyMetric;
+import org.frameworkset.tran.metrics.entity.MapData;
+import org.frameworkset.tran.metrics.job.KeyMetricBuilder;
+import org.frameworkset.tran.metrics.job.Metrics;
+import org.frameworkset.tran.metrics.job.builder.MetricBuilder;
 import org.frameworkset.tran.plugin.file.input.ExcelFileInputConfig;
+import org.frameworkset.tran.plugin.metrics.output.ETLMetrics;
+import org.frameworkset.tran.plugin.metrics.output.MetricsOutputConfig;
 import org.frameworkset.tran.schedule.CallInterceptor;
 import org.frameworkset.tran.schedule.TaskContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <p>Description:  从ftp服务器下载excel文件，采集excel文件中数据并交给自定义处理器按单条写入redis，redis配置参考resources/redis.xml配置文件</p>
+ * <p>Description:  从ftp服务器下载excel文件，采集excel文件中数据，交给指标计算器进行统计计算
+ * 单个metrics，metrics处理2类指标
+ * </p>
  * <p></p>
  * <p>Copyright (c) 2020</p>
  * @Date 2021/2/1 14:39
  * @author biaoping.yin
  * @version 1.0
  */
-public class FTPFileLog2CustomRedisDemo {
-	private static Logger logger = LoggerFactory.getLogger(FTPFileLog2CustomRedisDemo.class);
+public class FTPFileLog2Metrics2Metric {
+	private static Logger logger = LoggerFactory.getLogger(FTPFileLog2Metrics2Metric.class);
 	public static void main(String[] args){
 
 
@@ -65,7 +71,7 @@ public class FTPFileLog2CustomRedisDemo {
 
 		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
 				.setFtpUser("ecs").setFtpPassword("ecs@123").setDownloadWorkThreads(4)
-				.setRemoteFileDir("/home/ecs/failLog").setRemoteFileValidate(new RemoteFileValidate() {
+				.setRemoteFileDir("/home/ecs/excelfiles").setRemoteFileValidate(new RemoteFileValidate() {
 					/**
 					 * 校验数据文件合法性和完整性接口
 
@@ -179,45 +185,134 @@ public class FTPFileLog2CustomRedisDemo {
 		config.setEnableMeta(true);
 		importBuilder.setInputConfig(config);
 
-		//自己处理数据
+		BulkProcessorBuilder bulkProcessorBuilder = new BulkProcessorBuilder();
+		bulkProcessorBuilder.setBlockedWaitTimeout(-1)//指定bulk工作线程缓冲队列已满时后续添加的bulk处理排队等待时间，如果超过指定的时候bulk将被拒绝处理，单位：毫秒，默认为0，不拒绝并一直等待成功为止
 
-		CustomOutputConfig customOutputConfig = new CustomOutputConfig();
-		customOutputConfig.setCustomOutPut(new CustomOutPut() {
-			@Override
-			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
+				.setBulkSizes(200)//按批处理数据记录数
+				.setFlushInterval(5000)//强制bulk操作时间，单位毫秒，如果自上次bulk操作flushInterval毫秒后，数据量没有满足BulkSizes对应的记录数，但是有记录，那么强制进行bulk处理
 
-				//You can do any thing here for datas
-				//单笔记录处理
-				RedisHelper redisHelper = null;
-				RedisHelper redisHelper1 = null;
-				try {
-					redisHelper = RedisFactory.getRedisHelper();
-					redisHelper1 = RedisFactory.getRedisHelper("redis1");
+				.setWarnMultsRejects(1000)//由于没有空闲批量处理工作线程，导致bulk处理操作出于阻塞等待排队中，BulkProcessor会对阻塞等待排队次数进行计数统计，bulk处理操作被每被阻塞排队WarnMultsRejects次（1000次），在日志文件中输出拒绝告警信息
+				.setWorkThreads(10)//bulk处理工作线程数
+				.setWorkThreadQueue(50)//bulk处理工作线程池缓冲队列大小
+				.setBulkProcessorName("detail_bulkprocessor")//工作线程名称，实际名称为BulkProcessorName-+线程编号
+				.setBulkRejectMessage("detail bulkprocessor")//bulk处理操作被每被拒绝WarnMultsRejects次（1000次），在日志文件中输出拒绝告警信息提示前缀
+				.setElasticsearch("default")//指定明细Elasticsearch集群数据源名称，bboss可以支持多数据源
+				.setFilterPath(BulkConfig.ERROR_FILTER_PATH)
+				.addBulkInterceptor(new BulkInterceptor() {
+					public void beforeBulk(BulkCommand bulkCommand) {
 
-					for (CommonRecord record : datas) {
-						Map<String, Object> data = record.getDatas();
-						String cert_no = (String)data.get("cert_no");
-//					logger.info(SimpleStringUtil.object2json(data));
-						String valuedata = SimpleStringUtil.object2json(data);
-						redisHelper.hset("xingchenma", cert_no, valuedata);
-						redisHelper.hset("xingchenma", cert_no, valuedata);
 					}
-				}
-				finally {
-					if(redisHelper != null)
-						redisHelper.release();
-					if(redisHelper1 != null)
-						redisHelper1.release();
-				}
 
+					public void afterBulk(BulkCommand bulkCommand, String result) {
+						if(logger.isDebugEnabled()){
+							logger.debug(result);
+						}
+					}
+
+					public void exceptionBulk(BulkCommand bulkCommand, Throwable exception) {
+						if(logger.isErrorEnabled()){
+							logger.error("exceptionBulk",exception);
+						}
+					}
+					public void errorBulk(BulkCommand bulkCommand, String result) {
+						if(logger.isWarnEnabled()){
+							logger.warn(result);
+						}
+					}
+				})//添加批量处理执行拦截器，可以通过addBulkInterceptor方法添加多个拦截器
+		;
+		/**
+		 * 构建BulkProcessor批处理组件，一般作为单实例使用，单实例多线程安全，可放心使用
+		 */
+		BulkProcessor bulkProcessor = bulkProcessorBuilder.build();//构建批处理作业组件
+		ETLMetrics keyMetrics = new ETLMetrics(Metrics.MetricsType_KeyTimeMetircs){
+			@Override
+			public void builderMetrics(){
+				//指标1 按证书类型统计
+				addMetricBuilder(new MetricBuilder() {
+					@Override
+					public String buildMetricKey(MapData mapData){
+						CommonRecord data = (CommonRecord) mapData.getData();
+						String cert_type = (String) data.getData("cert_type");
+						return cert_type;
+					}
+					@Override
+					public KeyMetricBuilder metricBuilder(){
+						return new KeyMetricBuilder() {
+							@Override
+							public KeyMetric build() {
+								return new PersonMetric();
+							}
+						};
+					}
+				});
+
+				//指标2 按照征收项目统计
+				addMetricBuilder(new MetricBuilder() {
+					@Override
+					public String buildMetricKey(MapData mapData){
+						CommonRecord data = (CommonRecord) mapData.getData();
+						String zhs_item = (String) data.getData("zhs_item");
+						return zhs_item;
+					}
+					@Override
+					public KeyMetricBuilder metricBuilder(){
+						return new KeyMetricBuilder() {
+							@Override
+							public KeyMetric build() {
+								return new ZhsItemMetric();
+							}
+						};
+					}
+				});
+				// key metrics中包含两个segment(S0,S1)
+				setSegmentBoundSize(5000000);
+				setTimeWindows(60 );
+			}
+
+			@Override
+			public void persistent(Collection< KeyMetric> metrics) {
+				metrics.forEach(keyMetric->{
+					if(keyMetric instanceof PersonMetric) {
+						PersonMetric testKeyMetric = (PersonMetric) keyMetric;
+						Map esData = new HashMap();
+						esData.put("dataTime", testKeyMetric.getDataTime());
+						esData.put("hour", testKeyMetric.getDayHour());
+						esData.put("minute", testKeyMetric.getMinute());
+						esData.put("day", testKeyMetric.getDay());
+						esData.put("metric", testKeyMetric.getMetric());
+						esData.put("certType", testKeyMetric.getCertType());
+						esData.put("count", testKeyMetric.getCount());
+						bulkProcessor.insertData("vops-personmetrics", esData);
+					}
+					else if(keyMetric instanceof ZhsItemMetric) {
+						ZhsItemMetric testKeyMetric = (ZhsItemMetric) keyMetric;
+						Map esData = new HashMap();
+						esData.put("dataTime", testKeyMetric.getDataTime());
+						esData.put("hour", testKeyMetric.getDayHour());
+						esData.put("minute", testKeyMetric.getMinute());
+						esData.put("day", testKeyMetric.getDay());
+						esData.put("metric", testKeyMetric.getMetric());
+						esData.put("zhsItem", testKeyMetric.getZhsItem());
+						esData.put("count", testKeyMetric.getCount());
+						bulkProcessor.insertData("vops-zhsmetrics", esData);
+					}
+
+				});
 
 			}
-		});
-		importBuilder.setOutputConfig(customOutputConfig);
+		};
+
+
+		//自己处理数据
+		MetricsOutputConfig metricsOutputConfig = new MetricsOutputConfig();
+		metricsOutputConfig.addMetrics(keyMetrics);
+
+		importBuilder.setOutputConfig(metricsOutputConfig);
 		//增量配置开始
 		importBuilder.setFromFirst(true);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
-		importBuilder.setLastValueStorePath("filelogcustom_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
+		importBuilder.setLastValueStorePath("FTPFileLog2Metrics2Metric_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
 		//增量配置结束
 
 

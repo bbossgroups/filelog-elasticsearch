@@ -24,7 +24,7 @@ import org.frameworkset.tran.DataStream;
 import org.frameworkset.tran.ExportResultHandler;
 import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
-import org.frameworkset.tran.plugin.custom.output.CustomOupputConfig;
+import org.frameworkset.tran.plugin.custom.output.CustomOutputConfig;
 import org.frameworkset.tran.plugin.custom.output.CustomOutPut;
 import org.frameworkset.tran.plugin.es.input.ElasticsearchInputConfig;
 import org.frameworkset.tran.schedule.CallInterceptor;
@@ -72,9 +72,9 @@ public class Elasticsearch2CustomSingleRedisBatchDemo {
 //				.addParam("var2","v2")
 //				.addParam("var3","v3")
 		importBuilder.setIncreamentEndOffset(5);
-		CustomOupputConfig customOupputConfig = new CustomOupputConfig();
+		CustomOutputConfig customOutputConfig = new CustomOutputConfig();
 		//自己处理数据
-		customOupputConfig.setCustomOutPut(new CustomOutPut() {
+		customOutputConfig.setCustomOutPut(new CustomOutPut() {
 			@Override
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
@@ -110,7 +110,7 @@ public class Elasticsearch2CustomSingleRedisBatchDemo {
 				}
 			}
 		});
-		importBuilder.setOutputConfig(customOupputConfig);
+		importBuilder.setOutputConfig(customOutputConfig);
 		//定时任务配置，
 		importBuilder.setFixedRate(false)//参考jdk timer task文档对fixedRate的说明
 //					 .setScheduleDate(date) //指定任务开始执行时间：日期
