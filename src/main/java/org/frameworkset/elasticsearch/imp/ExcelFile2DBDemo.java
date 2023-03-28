@@ -220,10 +220,7 @@ public class ExcelFile2DBDemo {
 
 			}
 
-			@Override
-			public int getMaxRetry() {
-				return 0;
-			}
+
 		});
 
 		/**

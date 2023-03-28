@@ -224,10 +224,7 @@ public class FtpAvl2ESDemo {
 				logger.warn("error:",exception);
 			}
 
-			@Override
-			public int getMaxRetry() {
-				return 0;
-			}
+
 		});
 
 

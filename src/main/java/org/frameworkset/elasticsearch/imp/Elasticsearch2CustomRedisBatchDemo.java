@@ -156,10 +156,6 @@ public class Elasticsearch2CustomRedisBatchDemo {
 				logger.info("数据导入情况:{}",taskCommand.getTaskMetrics().toString(),exception);
 			}
 
-			@Override
-			public int getMaxRetry() {
-				return 0;
-			}
 		});
 		importBuilder.addCallInterceptor(new CallInterceptor() {
 			@Override

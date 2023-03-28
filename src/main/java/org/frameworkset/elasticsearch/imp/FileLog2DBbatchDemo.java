@@ -344,10 +344,7 @@ public class FileLog2DBbatchDemo {
 
             }
 
-            @Override
-            public int getMaxRetry() {
-                return 0;
-            }
+
         });
         //映射和转换配置结束
 //		/**

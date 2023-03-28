@@ -216,10 +216,7 @@ public class ExcelFile2PostgresqlDBDemo {
 
 			}
 
-			@Override
-			public int getMaxRetry() {
-				return 0;
-			}
+
 		});
 
 		/**

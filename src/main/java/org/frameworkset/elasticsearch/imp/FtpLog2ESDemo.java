@@ -331,10 +331,6 @@ public class FtpLog2ESDemo {
 				logger.warn("error:",exception);
 			}
 
-			@Override
-			public int getMaxRetry() {
-				return 0;
-			}
 		});
 		/**
 		 * 内置线程池配置，实现多线程并行数据导入功能，作业完成退出时自动关闭该线程池
