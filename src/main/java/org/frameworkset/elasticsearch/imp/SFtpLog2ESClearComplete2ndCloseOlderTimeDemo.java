@@ -49,8 +49,8 @@ import java.util.Map;
  * @author biaoping.yin
  * @version 1.0
  */
-public class SFtpLog2ESDemo {
-	private static Logger logger = LoggerFactory.getLogger(SFtpLog2ESDemo.class);
+public class SFtpLog2ESClearComplete2ndCloseOlderTimeDemo {
+	private static Logger logger = LoggerFactory.getLogger(SFtpLog2ESClearComplete2ndCloseOlderTimeDemo.class);
 	public static void main(String[] args){
 
 		try {
@@ -85,26 +85,9 @@ public class SFtpLog2ESDemo {
 		importBuilder.addFieldMapping("@message","message");
 		FileInputConfig config = new FileInputConfig();
 		config.setScanNewFileInterval(1*60*1000l);//每隔半1分钟扫描ftp目录下是否有最新ftp文件信息，采集完成或已经下载过的文件不会再下载采集
-		/**
-		 * 备份采集完成文件
-		 * true 备份
-		 * false 不备份
-		 */
-		config.setBackupSuccessFiles(true);
-		/**
-		 * 备份文件目录
-		 */
-		config.setBackupSuccessFileDir("d:/ftpbackup");
-		/**
-		 * 备份文件清理线程执行时间间隔，单位：毫秒
-		 * 默认每隔10秒执行一次
-		 */
-		config.setBackupSuccessFileInterval(20000l);
-		/**
-		 * 备份文件保留时长，单位：秒
-		 * 默认保留7天
-		 */
-		config.setBackupSuccessFileLiveTime( 10 * 60l);
+        config.setMaxFilesThreshold(2);//允许同时采集2个文件
+
+
 //		config.setCharsetEncode("GB2312");
 		//.*.txt.[0-9]+$
 		//[17:21:32:388]
@@ -153,7 +136,9 @@ public class SFtpLog2ESDemo {
 				.setFtpUser("ecs").setFtpPassword("ecs@123")
 				.setRemoteFileDir("/home/ecs/failLog")
 				.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_SFTP) ;//采用sftp协议
-		config.addConfig(new FileConfig().setFtpConfig(ftpConfig)
+        FileConfig fileConfig = new FileConfig();
+        fileConfig.setCloseOlderTime(10000L);
+		config.addConfig(fileConfig.setFtpConfig(ftpConfig)
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
 											public boolean accept(FilterFileInfo fileInfo, //Ftp文件名称
@@ -180,9 +165,11 @@ public class SFtpLog2ESDemo {
 										})
                                 .setScanChild(true).setCloseOlderTime(10000L)
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
-										.setSourcePath("D:/ftplogs")//指定目录
+										.setSourcePath("D:/ftpchannel")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
+        config.setCleanCompleteFiles(true);
+        config.setFileLiveTime(1000000L);
 		config.setEnableMeta(true);
 //		config.setJsondata(true);
 		importBuilder.setInputConfig(config);
@@ -317,7 +304,7 @@ public class SFtpLog2ESDemo {
 		importBuilder.setExportResultHandler(new ExportResultHandler<String,String>() {
 			@Override
 			public void success(TaskCommand<String,String> taskCommand, String o) {
-				logger.info("result:"+o);
+//				logger.info("result:"+o);
 			}
 
 			@Override
@@ -348,5 +335,6 @@ public class SFtpLog2ESDemo {
 		DataStream dataStream = importBuilder.builder();
 		dataStream.execute();//启动同步作业
 		logger.info("job started.");
+
 	}
 }

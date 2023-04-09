@@ -88,7 +88,9 @@ public class FileSubDirLog2ESDemo {
 		config.setBackupSuccessFiles(false);
 		config.setBackupSuccessFileDir("D:\\backup\\subdirlogs");
 		config.setBackupSuccessFileLiveTime( 5 * 60l);//备份文件保留5分钟
-		config.addConfig(new FileConfig().setSourcePath("D:\\subdirlogs")//指定目录
+        FileConfig fileConfig = new FileConfig();
+        fileConfig.setCloseEOF(true);//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+		config.addConfig(fileConfig.setSourcePath("D:\\subdirlogs")//指定目录
 										.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
 										.setFileFilter(new FileFilter() {
 											@Override
@@ -99,7 +101,7 @@ public class FileSubDirLog2ESDemo {
 												return fileInfo.getFileName().equals("metrics-report.log") || fileInfo.getFileName().equals("metrics-subdir-report.log");
 											}
 										})//指定文件过滤器
-										.setCloseEOF(true)//已经结束的文件内容采集完毕后关闭文件对应的采集通道，后续不再监听对应文件的内容变化
+
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 										.setScanChild(true)
 				//				.setIncludeLines(new String[]{".*ERROR.*"})//采集包含ERROR的日志

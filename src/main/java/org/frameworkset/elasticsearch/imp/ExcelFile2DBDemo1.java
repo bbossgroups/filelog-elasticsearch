@@ -232,7 +232,7 @@ public class ExcelFile2DBDemo1 {
 		 */
 		DataStream dataStream = importBuilder.builder();
 		dataStream.execute();//启动同步作业
-        dataStream.destroy(true);
+//        dataStream.destroy(true);
 		logger.info("job started.");
 	}
 }
