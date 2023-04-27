@@ -138,7 +138,8 @@ public class ExcelFile2DBDemo {
 		importBuilder.setFromFirst(false);//setFromfirst(false)，如果作业停了，作业重启后从上次截止位置开始采集数据，
 		//setFromfirst(true) 如果作业停了，作业重启后，重新开始采集数据
 		importBuilder.setLastValueStorePath("excelfilemysql_import");//记录上次采集的增量字段值的文件路径，作为下次增量（或者重启后）采集数据的起点，不同的任务这个路径要不一样
-		//增量配置结束
+        importBuilder.setLastValueStorePassword("@12341234*");
+        //增量配置结束
 
 
 		final Count count = new Count();
