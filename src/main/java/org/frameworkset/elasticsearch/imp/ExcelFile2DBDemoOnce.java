@@ -42,8 +42,8 @@ import org.slf4j.LoggerFactory;
  * @author biaoping.yin
  * @version 1.0
  */
-public class ExcelFile2DBDemo1 {
-	private static Logger logger = LoggerFactory.getLogger(ExcelFile2DBDemo1.class);
+public class ExcelFile2DBDemoOnce {
+	private static Logger logger = LoggerFactory.getLogger(ExcelFile2DBDemoOnce.class);
 	public static void main(String[] args){
 //		Date[] times = getFileDates(new File("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles\\backup\\works.xlsx") );
 
@@ -101,6 +101,7 @@ public class ExcelFile2DBDemo1 {
 						return fileInfo.getFileName().equals("cityperson.xlsx");
 					}
 				})//指定文件过滤器
+                .setCloseEOF(true)
 				.setSkipHeaderLines(1);//忽略第一行
 		config.addConfig(excelFileConfig);
 
