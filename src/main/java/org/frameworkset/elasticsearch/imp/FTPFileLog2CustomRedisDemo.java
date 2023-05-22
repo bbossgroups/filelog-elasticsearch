@@ -111,7 +111,7 @@ public class FTPFileLog2CustomRedisDemo {
 										  FileConfig fileConfig) {
 						String name = fileInfo.getFileName();
 
-						if(name.startsWith("湖南师大2021年新生医保（2021年）申报名单-合并"))
+						if(name.startsWith("师大2021年新生医保（2021年）申报名单-合并"))
 							return true;
 						else
 							return false;

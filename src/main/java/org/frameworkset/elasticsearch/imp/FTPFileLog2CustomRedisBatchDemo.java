@@ -122,7 +122,7 @@ public class FTPFileLog2CustomRedisBatchDemo {
 						String name = fileInfo.getFileName();
 //						//判断是否采集文件数据，返回true标识采集，false 不采集
 
-						if(name.startsWith("湖南师大2021年新生医保（2021年）申报名单-合并"))
+						if(name.startsWith("师大2021年新生医保（2021年）申报名单-合并"))
 							return true;
 						else
 							return false;
