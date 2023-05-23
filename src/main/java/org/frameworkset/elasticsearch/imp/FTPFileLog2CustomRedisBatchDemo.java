@@ -64,7 +64,7 @@ public class FTPFileLog2CustomRedisBatchDemo {
 		importBuilder.setFlushInterval(10000l);
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
 
-		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(5322)
 				.setFtpUser("ecs").setFtpPassword("ecs@123").setDownloadWorkThreads(4)
 				.setRemoteFileDir("/home/ecs/failLog").setRemoteFileValidate(new RemoteFileValidate() {
 					/**

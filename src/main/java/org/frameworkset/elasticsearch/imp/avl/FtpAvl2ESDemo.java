@@ -92,7 +92,7 @@ public class FtpAvl2ESDemo {
 		 */
 		config.setBackupSuccessFileLiveTime( 100 * 60l);
 
-		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(21)
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(21)
 				.setFtpUser("ecsftp").setFtpPassword("ecsftp").setDownloadWorkThreads(3)//设置4个线程并行下载文件，可以允许最多4个文件同时下载
 				.setRemoteFileDir("xcm").setRemoteFileValidate(new RemoteFileValidate() {
 					/**

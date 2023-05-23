@@ -71,7 +71,7 @@ public class FtpExcelFile2DBDemo {
 		importBuilder.setFlushInterval(10000l);
 
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
-		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(5322)
 				.setFtpUser("ecs").setFtpPassword("ecs@123")
 				.setRemoteFileDir("/home/ecs/failLog");
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level

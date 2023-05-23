@@ -69,8 +69,8 @@ public class FTPFileLog2Metrics {
 		importBuilder.setFlushInterval(10000l);
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
 
-		FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
-				.setFtpUser("ecs").setFtpPassword("ecs@123").setDownloadWorkThreads(4)
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("localhost").setFtpPort(5322)
+				.setFtpUser("ecsddd").setFtpPassword("ecs1111@123").setDownloadWorkThreads(4)
 				.setRemoteFileDir("/home/ecs/excelfiles").setRemoteFileValidate(new RemoteFileValidate() {
 					/**
 					 * 校验数据文件合法性和完整性接口
