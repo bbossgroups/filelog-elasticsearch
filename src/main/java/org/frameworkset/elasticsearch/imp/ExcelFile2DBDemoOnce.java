@@ -76,7 +76,6 @@ public class ExcelFile2DBDemoOnce {
 		importBuilder.setFlushInterval(10000l);
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
         config.setDisableScanNewFiles(true);
-
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
 		//配置excel文件列与导出字段名称映射关系
 		FileConfig excelFileConfig = new ExcelFileConfig();
@@ -101,11 +100,9 @@ public class ExcelFile2DBDemoOnce {
 						return fileInfo.getFileName().equals("cityperson.xlsx");
 					}
 				})//指定文件过滤器
-                .setCloseEOF(true)
+                .setDeleteEOFFile(true)
 				.setSkipHeaderLines(1);//忽略第一行
 		config.addConfig(excelFileConfig);
-
-
 		config.setEnableMeta(true);
 		importBuilder.setInputConfig(config);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
