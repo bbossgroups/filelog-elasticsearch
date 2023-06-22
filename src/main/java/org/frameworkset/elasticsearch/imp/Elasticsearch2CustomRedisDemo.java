@@ -81,12 +81,12 @@ public class Elasticsearch2CustomRedisDemo {
 			public void handleData(TaskContext taskContext, List<CommonRecord> datas) {
 
 				//You can do any thing here for datas
-				//单笔记录处理
+				//同时将数据写入两个redis集群：单笔记录处理
 				RedisHelper redisHelper = null;
 				RedisHelper redisHelper1 = null;
 				try {
-					redisHelper = RedisFactory.getRedisHelper();
-					redisHelper1 = RedisFactory.getRedisHelper("redis1");
+					redisHelper = RedisFactory.getRedisHelper();//第一个集群
+					redisHelper1 = RedisFactory.getRedisHelper("redis1");//第二个集群
 
 					for (CommonRecord record : datas) {
 						Map<String, Object> data = record.getDatas();
@@ -95,8 +95,8 @@ public class Elasticsearch2CustomRedisDemo {
 						String valuedata = SimpleStringUtil.object2json(data);
 						logger.debug("LOG_ID:{}",LOG_ID);
 //					logger.info(SimpleStringUtil.object2json(data));
-						redisHelper.hset("xingchenma", LOG_ID, valuedata);
-						redisHelper1.hset("xingchenma", LOG_ID, valuedata);
+						redisHelper.hset("xingchenma", LOG_ID, valuedata);//将数据写入第一个集群
+						redisHelper1.hset("xingchenma", LOG_ID, valuedata);//将数据写入第一个集群
 					}
 				}
 				finally {
