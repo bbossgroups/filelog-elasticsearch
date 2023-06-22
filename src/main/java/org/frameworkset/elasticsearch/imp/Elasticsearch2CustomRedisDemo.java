@@ -96,7 +96,7 @@ public class Elasticsearch2CustomRedisDemo {
 						logger.debug("LOG_ID:{}",LOG_ID);
 //					logger.info(SimpleStringUtil.object2json(data));
 						redisHelper.hset("xingchenma", LOG_ID, valuedata);
-						redisHelper.hset("xingchenma", LOG_ID, valuedata);
+						redisHelper1.hset("xingchenma", LOG_ID, valuedata);
 					}
 				}
 				finally {
