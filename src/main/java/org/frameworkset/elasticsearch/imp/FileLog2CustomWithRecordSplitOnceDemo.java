@@ -15,7 +15,6 @@ package org.frameworkset.elasticsearch.imp;
  * limitations under the License.
  */
 
-import com.frameworkset.util.SimpleStringUtil;
 import org.frameworkset.elasticsearch.entity.KeyMap;
 import org.frameworkset.tran.*;
 import org.frameworkset.tran.config.ImportBuilder;
@@ -73,7 +72,16 @@ public class FileLog2CustomWithRecordSplitOnceDemo {
 		importBuilder.addFieldMapping("@message","message");
 		FileInputConfig config = new FileInputConfig();
 		config.setCharsetEncode("GB2312");
+        /**
+         * 一次性文件数据采集，禁用新文件扫描机制，控制文件采集的一次性全量处理，这样就不会进行增量监听了，和其他插件的一次性采集设置保持一致
+         */
         config.setDisableScanNewFiles(true);
+        /**
+         * 一次性文件全量采集的处理，是否禁止记录文件采集状态，false 不禁止，true 禁止，不禁止
+         * 情况下作业重启，已经采集过的文件不会再采集，未采集完的文件，从上次采集截止的位置开始采集
+         * 默认 true 禁止
+         */
+        config.setDisableScanNewFilesCheckpoint(false);
         config.setMaxFilesThreshold(10);
 		config.addConfig(new FileConfig().setSourcePath("D:\\oncelogs")//指定目录
 										.setFileHeadLineRegular("^\\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}:[0-9]{3}\\]")//指定多行记录的开头识别标记，正则表达式
@@ -85,9 +93,9 @@ public class FileLog2CustomWithRecordSplitOnceDemo {
 												return r;
 											}
 										})//指定文件过滤器
-                                        .setDeleteEOFFile(true)
+                                        .setDeleteEOFFile(true)//删除采集完毕的文件
 //                                        .setCloseOlderTime(10000L)
-                                        .setCloseEOF(true)
+                                        .setCloseEOF(true)//采集完毕后，关闭文件采集通道
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
 
@@ -136,7 +144,7 @@ public class FileLog2CustomWithRecordSplitOnceDemo {
                 //You can do any thing here for datas
                 for(CommonRecord record:datas){
                     Map<String,Object> data = record.getDatas();
-                    logger.info(SimpleStringUtil.object2json(data));
+//                    logger.info(SimpleStringUtil.object2json(data));
                 }
             }
         });
@@ -221,6 +229,5 @@ public class FileLog2CustomWithRecordSplitOnceDemo {
 		 */
 		DataStream dataStream = importBuilder.builder();
 		dataStream.execute();//启动同步作业
-		logger.info("job started.");
 	}
 }
