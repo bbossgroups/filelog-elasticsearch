@@ -132,12 +132,11 @@ public class SFtpLog2ESClearComplete2ndCloseOlderTimeDemo {
 			logger.error("",e);
 		}
 		final Date startDate = _startDate;
-		FtpConfig ftpConfig = new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(5322)
-				.setFtpUser("ecs").setFtpPassword("ecs@123")
+		FtpConfig ftpConfig = new FtpConfig().setFtpIP("localhost").setFtpPort(22)
+				.setFtpUser("ecs").setFtpPassword("xxxx!")
 				.setRemoteFileDir("/home/ecs/failLog")
 				.setTransferProtocol(FtpConfig.TRANSFER_PROTOCOL_SFTP) ;//采用sftp协议
         FileConfig fileConfig = new FileConfig();
-        fileConfig.setCloseOlderTime(10000L);
 		config.addConfig(fileConfig.setFtpConfig(ftpConfig)
 										.setFileFilter(new FileFilter() {//指定ftp文件筛选规则
 											@Override
@@ -163,13 +162,13 @@ public class SFtpLog2ESClearComplete2ndCloseOlderTimeDemo {
                                                 return true;
 											}
 										})
-                                .setScanChild(true).setCloseOlderTime(10000L)
+                                .setScanChild(true).setCloseOlderTime(10000L)//静默关闭采集文件，并标记为采集完成
 //										.addSkipScanNewFileTimeRange("11:30-13:00")
 										.setSourcePath("D:/ftpchannel")//指定目录
 										.addField("tag","elasticsearch")//添加字段tag到记录中
 						);
-        config.setCleanCompleteFiles(true);
-        config.setFileLiveTime(1000000L);
+        config.setCleanCompleteFiles(true);//设置是否清理完成文件，true清理，false不清理
+//        config.setFileLiveTime(1000000L);//如果需要保留完成文件一定的时间，就可以设置，如果不设置，则立即清理完成文件
 		config.setEnableMeta(true);
 //		config.setJsondata(true);
 		importBuilder.setInputConfig(config);
@@ -301,19 +300,19 @@ public class SFtpLog2ESClearComplete2ndCloseOlderTimeDemo {
 			}
 		});
 		//映射和转换配置结束
-		importBuilder.setExportResultHandler(new ExportResultHandler<String,String>() {
+		importBuilder.setExportResultHandler(new ExportResultHandler() {
 			@Override
-			public void success(TaskCommand<String,String> taskCommand, String o) {
+			public void success(TaskCommand taskCommand, Object o) {
 //				logger.info("result:"+o);
 			}
 
 			@Override
-			public void error(TaskCommand<String,String> taskCommand, String o) {
+			public void error(TaskCommand taskCommand, Object o) {
 				logger.warn("error:"+o);
 			}
 
 			@Override
-			public void exception(TaskCommand<String,String> taskCommand, Throwable exception) {
+			public void exception(TaskCommand taskCommand, Throwable exception) {
 				logger.warn("error:",exception);
 			}
 
