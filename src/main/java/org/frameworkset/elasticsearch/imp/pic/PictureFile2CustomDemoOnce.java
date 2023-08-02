@@ -102,7 +102,7 @@ public class PictureFile2CustomDemoOnce {
                     record.put("picContent", Base64.encode(FileUtil.readFully(pic)));
                 }
                 else
-                    record.put("text","");
+                    record.put("picContent","");
                 recordExtractor.addRecord(record);
             }
 

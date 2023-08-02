@@ -86,9 +86,9 @@ public class PDFFile2CustomDemoOnce {
 				.setFetchSize(1000);//设置按批读取文件行数
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
-		PDFFileInputConfig wordFileInputConfig = new PDFFileInputConfig();
-        wordFileInputConfig.setDisableScanNewFiles(true);
-        wordFileInputConfig.setDisableScanNewFilesCheckpoint(false);
+		PDFFileInputConfig pdfFileInputConfig = new PDFFileInputConfig();
+        pdfFileInputConfig.setDisableScanNewFiles(true);
+        pdfFileInputConfig.setDisableScanNewFilesCheckpoint(false);
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
 		//配置excel文件列与导出字段名称映射关系
         PDFFileConfig pdfFileConfig = new PDFFileConfig();
@@ -128,11 +128,11 @@ public class PDFFile2CustomDemoOnce {
 						return true;
 					}
 				});//指定文件过滤器
-		wordFileInputConfig.addConfig(pdfFileConfig);
+		pdfFileInputConfig.addConfig(pdfFileConfig);
 
 
-		wordFileInputConfig.setEnableMeta(true);
-		importBuilder.setInputConfig(wordFileInputConfig);
+		pdfFileInputConfig.setEnableMeta(true);
+		importBuilder.setInputConfig(pdfFileInputConfig);
 		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 
 //自己处理数据
