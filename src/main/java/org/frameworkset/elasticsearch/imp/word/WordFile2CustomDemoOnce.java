@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * <p>Description: 从日志文件采集日志数据并保存到</p>
+ * <p>Description: word文件采集作业</p>
  * <p></p>
  * <p>Copyright (c) 2020</p>
  * @Date 2021/2/1 14:39
@@ -55,30 +55,7 @@ import java.util.Map;
 public class WordFile2CustomDemoOnce {
 	private static Logger logger = LoggerFactory.getLogger(WordFile2CustomDemoOnce.class);
 	public static void main(String[] args){
-//		Date[] times = getFileDates(new File("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles\\backup\\works.xlsx") );
 
-/**
- * 案例对应的表结构
- * CREATE TABLE
- *     filelog
- *     (
- *         id VARCHAR(100),
- *         MESSAGE text,
- *         title VARCHAR(1024),
- *         collecttime DATETIME,
- *         author VARCHAR(100),
- *         subtitle VARCHAR(450),
- *         optime DATETIME,
- *         path VARCHAR(200),
- *         hostname VARCHAR(100),
- *         pointer bigint(10),
- *         hostip VARCHAR(100),
- *         fileId VARCHAR(200),
- *         tag VARCHAR(45),
- *         PRIMARY KEY (id),
- *     )
- *     ENGINE=InnoDB DEFAULT CHARSET=utf8;
- */
 		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
@@ -88,8 +65,7 @@ public class WordFile2CustomDemoOnce {
 		WordFileInputConfig wordFileInputConfig = new WordFileInputConfig();
         wordFileInputConfig.setDisableScanNewFiles(true);
         wordFileInputConfig.setDisableScanNewFilesCheckpoint(false);
-		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
-		//配置excel文件列与导出字段名称映射关系
+		//word文件采集配置
         WordFileConfig wordFileConfig = new WordFileConfig();
         /**
          * 如果不设置setWordExtractor，默认将文件内容放置到wordContent字段中
@@ -107,7 +83,7 @@ public class WordFile2CustomDemoOnce {
 
 
         });
-		wordFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\wordfiles")//指定目录
+		wordFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\wordfiles")//指定word文件目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
@@ -120,7 +96,6 @@ public class WordFile2CustomDemoOnce {
 
 		wordFileInputConfig.setEnableMeta(true);
 		importBuilder.setInputConfig(wordFileInputConfig);
-		//指定elasticsearch数据源名称，在application.properties文件中配置，default为默认的es数据源名称
 
 //自己处理数据
         CustomOutputConfig customOutputConfig = new CustomOutputConfig();
@@ -141,7 +116,7 @@ public class WordFile2CustomDemoOnce {
 
 		final Count count = new Count();
 		/**
-		 * 重新设置es数据结构
+		 * 数据转换处理：添加、修改、删除字段、过滤记录等
 		 */
 		importBuilder.setDataRefactor(new DataRefactor() {
 			public void refactor(Context context) throws Exception  {
@@ -231,7 +206,7 @@ public class WordFile2CustomDemoOnce {
 		importBuilder.setPrintTaskLog(true);
 
 		/**
-		 * 启动es数据导入文件并上传sftp/ftp作业
+		 * 构建和启动作业
 		 */
 		DataStream dataStream = importBuilder.builder();
 		dataStream.execute();//启动同步作业
@@ -239,22 +214,3 @@ public class WordFile2CustomDemoOnce {
 	}
 }
 
-/**
- * pestresql
- * CREATE TABLE
- *     cityperson
- *     (
- *         shebao_org VARCHAR(200),
- *         person_no VARCHAR(200),
- *         name VARCHAR(200),
- *         cert_type VARCHAR(200),
- *         cert_no VARCHAR(200) NOT NULL,
- *         zhs_item VARCHAR(200),
- *         zhs_class VARCHAR(200),
- *         zhs_sub_class VARCHAR(200),
- *         zhs_year VARCHAR(200),
- *         zhs_level VARCHAR(200),
- *         rowNo bigint
- *     )
- *
- */
