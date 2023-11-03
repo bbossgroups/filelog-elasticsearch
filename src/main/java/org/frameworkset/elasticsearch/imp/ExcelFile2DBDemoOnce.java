@@ -92,7 +92,7 @@ public class ExcelFile2DBDemoOnce {
 				.addCellMapping(7,"zhs_sub_class")
 				.addCellMapping(8,"zhs_year","2022")
 				.addCellMapping(9,"zhs_level","1");
-		excelFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles")//指定目录
+		excelFileConfig.setSourcePath("c:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles")//指定目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
