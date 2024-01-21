@@ -78,6 +78,7 @@ public class ExcelFile2CustomDemoOnce {
 		ImportBuilder importBuilder = new ImportBuilder();
 		importBuilder.setBatchSize(500)//设置批量入库的记录数
 				.setFetchSize(1000);//设置按批读取文件行数
+        importBuilder.setJobId("ExcelFile2CustomDemoOnce");
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
@@ -99,7 +100,7 @@ public class ExcelFile2CustomDemoOnce {
 				.addCellMapping(7,"zhs_sub_class")
 				.addCellMapping(8,"zhs_year","2022")
 				.addCellMapping(9,"zhs_level","1");
-		excelFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles")//指定目录
+        excelFileConfig.setSourcePath("C:\\workspace\\bbossgroups\\bboss-demos\\etl-elasticsearch\\filelog-elasticsearch\\excelfiles")//指定目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
