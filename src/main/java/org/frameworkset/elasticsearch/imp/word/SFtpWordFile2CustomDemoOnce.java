@@ -84,7 +84,7 @@ public class SFtpWordFile2CustomDemoOnce {
 
 
         });
-		wordFileConfig.setSourcePath("D:\\wordfiles")//指定word文件目录
+		wordFileConfig.setSourcePath("C:\\data\\wordfiles")//指定word文件目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
@@ -92,8 +92,8 @@ public class SFtpWordFile2CustomDemoOnce {
 						return true;
 					}
 				});//指定文件过滤器
-        FtpConfig ftpConfig = new FtpConfig().setFtpIP("127.0.0.1").setFtpPort(5322)
-                .setFtpUser("ecs").setFtpPassword("2!")
+        FtpConfig ftpConfig = new FtpConfig().setFtpIP("10.13.6.127").setFtpPort(5322)
+                .setFtpUser("ecs").setFtpPassword("hnyd#432!")
                 .setRemoteFileDir("/home/ecs/wordfiles")//指定sftp根目录
                 .setDeleteRemoteFile(false);//下载文件成功完成后，删除对应的ftp文件，false 不删除 true 删除
         wordFileConfig.setFtpConfig(ftpConfig);

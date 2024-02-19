@@ -98,7 +98,7 @@ public class PDFFile2CustomDemoOnce {
 
 
         });
-		pdfFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\pdffiles")//指定pdf文件目录
+		pdfFileConfig.setSourcePath("C:\\workspace\\bbossgroups\\bboss-demos\\etl-elasticsearch\\filelog-elasticsearch\\pdffiles")//指定pdf文件目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
