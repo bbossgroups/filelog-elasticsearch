@@ -125,7 +125,7 @@ public class FileLog2OldRegistCleanDemo {
 //		DummyOupputConfig dummyOupputConfig = new DummyOupputConfig();
 //		dummyOupputConfig.setRecordGenerator(new RecordGenerator() {
 //			@Override
-//			public void buildRecord(Context taskContext, CommonRecord record, Writer builder) throws Exception{
+//			public void buildRecord(TaskContext taskContext, CommonRecord record, Writer builder) throws Exception{
 //				SimpleStringUtil.object2json(record.getDatas(),builder);
 //
 //			}

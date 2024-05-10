@@ -24,6 +24,7 @@ import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.input.file.FileConfig;
 import org.frameworkset.tran.plugin.dummy.output.DummyOutputConfig;
 import org.frameworkset.tran.plugin.file.input.FileInputConfig;
+import org.frameworkset.tran.schedule.TaskContext;
 import org.frameworkset.tran.util.RecordGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +117,7 @@ public class FileLog2DummyDemo {
 		DummyOutputConfig dummyOutputConfig = new DummyOutputConfig();
 		dummyOutputConfig.setRecordGenerator(new RecordGenerator() {
 			@Override
-			public void buildRecord(Context taskContext, CommonRecord record, Writer builder) throws Exception{
+			public void buildRecord(TaskContext taskContext, CommonRecord record, Writer builder) throws Exception{
 				SimpleStringUtil.object2json(record.getDatas(),builder);
 
 			}
