@@ -240,9 +240,9 @@ public class FtpLog2DB {
 
 
         //映射和转换配置开始
-        importBuilder.setExportResultHandler(new ExportResultHandler<String, String>() {
+        importBuilder.setExportResultHandler(new ExportResultHandler<String>() {
             @Override
-            public void success(TaskCommand<String, String> taskCommand, String o) {
+            public void success(TaskCommand<String> taskCommand, String o) {
                 TaskMetrics taskMetric = taskCommand.getTaskMetrics();
                 logger.info("处理耗时：" + taskCommand.getElapsed() + "毫秒");
                 logger.info(taskMetric.toString());
@@ -250,12 +250,12 @@ public class FtpLog2DB {
             }
 
             @Override
-            public void error(TaskCommand<String, String> taskCommand, String o) {
+            public void error(TaskCommand<String> taskCommand, String o) {
                 logger.warn("error:" + o);
             }
 
             @Override
-            public void exception(TaskCommand<String, String> taskCommand, Throwable exception) {
+            public void exception(TaskCommand<String> taskCommand, Throwable exception) {
                 logger.warn("处理异常error:", exception);
 
             }

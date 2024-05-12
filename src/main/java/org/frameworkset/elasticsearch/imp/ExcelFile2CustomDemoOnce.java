@@ -169,9 +169,9 @@ public class ExcelFile2CustomDemoOnce {
 			}
 		});
 
-		importBuilder.setExportResultHandler(new ExportResultHandler<String, String>() {
+		importBuilder.setExportResultHandler(new ExportResultHandler<String>() {
 			@Override
-			public void success(TaskCommand<String, String> taskCommand, String result) {
+			public void success(TaskCommand<String> taskCommand, String result) {
 				TaskMetrics taskMetric = taskCommand.getTaskMetrics();
 
 				//String updateSQL = "update _status_datasource " +
@@ -199,14 +199,14 @@ public class ExcelFile2CustomDemoOnce {
 			}
 
 			@Override
-			public void error(TaskCommand<String, String> taskCommand, String result) {
+			public void error(TaskCommand<String> taskCommand, String result) {
 				//TaskMetrics taskMetrics = taskCommand.getTaskMetrics();
 				//logger.info(taskMetrics.toString());
 				logger.warn("error:" + result);
 			}
 
 			@Override
-			public void exception(TaskCommand<String, String> taskCommand, Throwable exception) {
+			public void exception(TaskCommand<String> taskCommand, Throwable exception) {
 				//TaskMetrics taskMetrics = taskCommand.getTaskMetrics();
 				//logger.info(taskMetrics.toString());
 //				logger.warn("处理异常error:", exception);
