@@ -30,7 +30,7 @@ https://esdoc.bbossgroups.com/#/bboss-build
 
 从上面的地址下载源码工程，然后导入idea或者eclipse，根据自己的需求，修改导入程序逻辑
 
-org.frameworkset.elasticsearch.imp.FileLog2ESDemo
+org.frameworkset.datatran.imp.FileLog2ESDemo
 
 如果需要测试和调试导入功能，运行FileLog2ESDemo的main方法即可即可：
 
@@ -94,7 +94,7 @@ windows: restart.bat
 
 ```ini
 #作业运行主程序配置
-mainclass=org.frameworkset.elasticsearch.imp.FileLog2ESDemo
+mainclass=org.frameworkset.datatran.imp.FileLog2ESDemo
 
 # 参数配置
 # 在代码中获取方法：CommonLauncher.getBooleanAttribute("dropIndice",false);//同时指定了默认值false
