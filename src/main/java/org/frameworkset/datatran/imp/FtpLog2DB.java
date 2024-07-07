@@ -199,7 +199,7 @@ public class FtpLog2DB {
         String dbMinIdleSize = propertiesContainer.getSystemEnvProperty("db.minIdleSize", "100");
         String dbMaxSize = propertiesContainer.getSystemEnvProperty("db.maxSize", "1000");
         String dbJdbcFetchSize = propertiesContainer.getSystemEnvProperty("db.jdbcFetchSize", "10000");
-        boolean columnLableUpperCase = propertiesContainer.getBooleanProperty("db.columnLableUpperCase", true);
+        boolean columnLableUpperCase = propertiesContainer.getBooleanProperty("db.columnLableUpperCase", false);
 
         dbOutputConfig.setDbName(dbName)//指定目标数据库，在application.properties文件中配置
                 .setDbDriver(dbDriver) //数据库驱动程序，必须导入相关数据库的驱动jar包
