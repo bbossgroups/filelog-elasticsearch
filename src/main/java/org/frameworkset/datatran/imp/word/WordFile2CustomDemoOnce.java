@@ -64,7 +64,7 @@ public class WordFile2CustomDemoOnce {
 		importBuilder.setFlushInterval(10000l);
 		WordFileInputConfig wordFileInputConfig = new WordFileInputConfig();
         wordFileInputConfig.setDisableScanNewFiles(true);
-        wordFileInputConfig.setDisableScanNewFilesCheckpoint(false);
+        wordFileInputConfig.setDisableScanNewFilesCheckpoint(true);
 		//word文件采集配置
         WordFileConfig wordFileConfig = new WordFileConfig();
         /**
@@ -83,7 +83,7 @@ public class WordFile2CustomDemoOnce {
 
 
         });
-		wordFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\wordfiles")//指定word文件目录
+		wordFileConfig.setSourcePath("C:\\workspace\\bbossgroups\\bboss-demos\\etl-elasticsearch\\filelog-elasticsearch\\wordfiles")//指定word文件目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
