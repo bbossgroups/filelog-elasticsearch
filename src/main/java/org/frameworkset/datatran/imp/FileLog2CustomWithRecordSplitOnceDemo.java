@@ -16,7 +16,11 @@ package org.frameworkset.datatran.imp;
  */
 
 import org.frameworkset.elasticsearch.entity.KeyMap;
-import org.frameworkset.tran.*;
+import org.frameworkset.tran.CommonRecord;
+import org.frameworkset.tran.DataRefactor;
+import org.frameworkset.tran.DataStream;
+import org.frameworkset.tran.ExportResultHandler;
+import org.frameworkset.tran.Record;
 import org.frameworkset.tran.config.ImportBuilder;
 import org.frameworkset.tran.context.Context;
 import org.frameworkset.tran.input.file.FileConfig;

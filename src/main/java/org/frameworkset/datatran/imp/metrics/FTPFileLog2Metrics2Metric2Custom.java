@@ -32,6 +32,7 @@ import org.frameworkset.tran.input.file.FileTaskContext;
 import org.frameworkset.tran.input.file.FilterFileInfo;
 import org.frameworkset.tran.metrics.entity.KeyMetric;
 import org.frameworkset.tran.metrics.entity.MapData;
+import org.frameworkset.tran.metrics.entity.MetricKey;
 import org.frameworkset.tran.metrics.job.KeyMetricBuilder;
 import org.frameworkset.tran.metrics.job.Metrics;
 import org.frameworkset.tran.metrics.job.builder.MetricBuilder;
@@ -230,10 +231,10 @@ public class FTPFileLog2Metrics2Metric2Custom {
 				//指标1 按证书类型统计
 				addMetricBuilder(new MetricBuilder() {
 					@Override
-					public String buildMetricKey(MapData mapData){
+					public MetricKey buildMetricKey(MapData mapData){
 						CommonRecord data = (CommonRecord) mapData.getData();
 						String cert_type = (String) data.getData("cert_type");
-						return cert_type;
+						return new MetricKey(cert_type);
 					}
 					@Override
 					public KeyMetricBuilder metricBuilder(){
@@ -249,10 +250,10 @@ public class FTPFileLog2Metrics2Metric2Custom {
 				//指标2 按照征收项目统计
 				addMetricBuilder(new MetricBuilder() {
 					@Override
-					public String buildMetricKey(MapData mapData){
+					public MetricKey buildMetricKey(MapData mapData){
 						CommonRecord data = (CommonRecord) mapData.getData();
 						String zhs_item = (String) data.getData("zhs_item");
-						return zhs_item;
+						return new MetricKey(zhs_item);
 					}
 					@Override
 					public KeyMetricBuilder metricBuilder(){
