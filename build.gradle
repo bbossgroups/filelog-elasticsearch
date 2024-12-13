@@ -144,7 +144,7 @@ configure(allprojects) { project ->
 		//api group: 'mysql', name: 'mysql-connector-java', version: '8.0.33'
 		//mysql 5.x依赖
 		api (
-                [group: 'com.mysql', name: 'mysql-connector-j', version: '9.1.0', transitive: false],
+                [group: 'com.mysql', name: 'mysql-connector-j', version: '8.2.0', transitive: false],
                 [group: 'com.bbossgroups', name: 'bboss-bootstrap-rt', version: "${bboss_version}", transitive: true],
 				[group: 'com.bbossgroups', name: 'bboss-data', version: "${PROJ_BBOSS_DATA_VERSION}", transitive: true],
 		)
