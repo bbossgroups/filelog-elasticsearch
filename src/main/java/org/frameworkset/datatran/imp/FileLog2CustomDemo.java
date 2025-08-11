@@ -74,7 +74,8 @@ public class FileLog2CustomDemo {
 				 * linux环境下，在不存在重命名的场景下可以关闭inode文件标识符机制，windows环境下强制关闭inode文件标识符机制
 				 */
 				.setEnableInode(false)
-				.setExcludeLines(new String[]{".*endpoint.*"}));//采集不包含endpoint的日志
+				.setExcludeLines(new String[]{".*endpoint.*"})
+        );//采集不包含endpoint的日志
 
 //		config.addConfig("E:\\ELK\\data\\data3",".*.txt","^[0-9]{4}-[0-9]{2}-[0-9]{2}");
 		/**

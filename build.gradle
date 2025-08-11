@@ -146,11 +146,15 @@ configure(allprojects) { project ->
 		api (
                 [group: 'com.mysql', name: 'mysql-connector-j', version: '8.2.0', transitive: false],
                 [group: 'com.bbossgroups', name: 'bboss-bootstrap-rt', version: "${bboss_version}", transitive: true],
-				[group: 'com.bbossgroups', name: 'bboss-data', version: "${PROJ_BBOSS_DATA_VERSION}", transitive: true],
 		)
 		api (
 				fileTree(dir: 'lib', include: '*.jar')
 		)
+        // AWS依赖开始
+        api "software.amazon.awssdk:s3:${s3version}"
+        api "software.amazon.awssdk:auth:${s3version}"
+        api "software.amazon.awssdk:regions:${s3version}"
+        api "software.amazon.awssdk:apache-client:${s3version}"
 	}
 
 
