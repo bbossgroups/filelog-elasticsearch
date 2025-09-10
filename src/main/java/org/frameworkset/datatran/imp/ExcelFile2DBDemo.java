@@ -75,9 +75,9 @@ public class ExcelFile2DBDemo {
 		//设置强制刷新检测空闲时间间隔，单位：毫秒，在空闲flushInterval后，还没有数据到来，强制将已经入列的数据进行存储操作，默认8秒,为0时关闭本机制
 		importBuilder.setFlushInterval(10000l);
 		ExcelFileInputConfig config = new ExcelFileInputConfig();
-		config.setBackupSuccessFiles(true);
-		config.setBackupSuccessFileDir("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles\\backup");
-//		config.setBackupSuccessFileLiveTime(0);
+		config.setBackupSuccessFiles(false);
+		config.setBackupSuccessFileDir("C:\\workspace\\bbossgroups\\bboss-demos\\etl-elasticsearch\\filelog-elasticsearch\\backup");
+		config.setBackupSuccessFileLiveTime(0);
 
 		//shebao_org,person_no, name, cert_type,cert_no,zhs_item  ,zhs_class ,zhs_sub_class,zhs_year  , zhs_level
 		//配置excel文件列与导出字段名称映射关系
@@ -96,7 +96,7 @@ public class ExcelFile2DBDemo {
 				.addCellMapping(8,"zhs_year","2022")
 				.addCellMapping(9,"zhs_level","1");
 //                .addCellMappingWithType(10,"xxx",CELL_DATE );
-		excelFileConfig.setSourcePath("D:\\workspace\\bbossesdemo\\filelog-elasticsearch\\excelfiles")//指定目录
+		excelFileConfig.setSourcePath("C:\\workspace\\bbossgroups\\bboss-demos\\etl-elasticsearch\\filelog-elasticsearch\\excelfiles")//指定目录
 				.setFileFilter(new FileFilter() {
 					@Override
 					public boolean accept(FilterFileInfo fileInfo, FileConfig fileConfig) {
