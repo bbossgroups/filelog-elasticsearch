@@ -76,7 +76,7 @@ public class CSVFile2ElasticsearchDemo {
 		ElasticsearchOutputConfig elasticsearchOutputConfig = new ElasticsearchOutputConfig();
 		elasticsearchOutputConfig
 				.addTargetElasticsearch("elasticsearch.serverNames","default")
-				.addElasticsearchProperty("default.elasticsearch.rest.hostNames","10.13.6.7:9200")
+				.addElasticsearchProperty("default.elasticsearch.rest.hostNames","192.168.137.1:9200")
 				.addElasticsearchProperty("default.elasticsearch.showTemplate","true")
 				.addElasticsearchProperty("default.elasticUser","elastic")
 				.addElasticsearchProperty("default.elasticPassword","changeme")
